@@ -1,0 +1,111 @@
+export default {
+  app: {
+    title: 'OpenMDtx',
+    version: 'v1.0.0'
+  },
+  menu: {
+    file: '文件',
+    edit: '编辑',
+    paragraph: '段落',
+    format: '格式',
+    view: '视图',
+    help: '帮助',
+    new: '新建',
+    open: '打开',
+    save: '保存',
+    exportPDF: '导出PDF',
+    exportHTML: '导出HTML',
+    exportWord: '导出Word',
+    undo: '撤销',
+    redo: '重做',
+    cut: '剪切',
+    copy: '复制',
+    paste: '粘贴',
+    selectAll: '全选',
+    heading1: '标题1',
+    heading2: '标题2',
+    heading3: '标题3',
+    heading4: '标题4',
+    heading5: '标题5',
+    heading6: '标题6',
+    plainText: '普通文本',
+    codeBlock: '代码块',
+    quoteBlock: '引用块',
+    bulletList: '无序列表',
+    orderedList: '有序列表',
+    taskList: '任务列表',
+    bold: '粗体',
+    italic: '斜体',
+    strike: '删除线',
+    code: '行内代码',
+    link: '链接',
+    image: '图片',
+    table: '表格',
+    toggleSidebar: '切换侧边栏',
+    about: '关于'
+  },
+  toolbar: {
+    new: '新建',
+    open: '打开',
+    save: '保存',
+    export: '导出',
+    pdf: 'PDF',
+    html: 'HTML',
+    word: 'Word',
+    settings: '设置'
+  },
+  sidebar: {
+    outline: '大纲',
+    noOutline: '暂无大纲',
+    addHeadings: '添加标题后自动生成',
+    show: '显示大纲',
+    hide: '隐藏大纲'
+  },
+  statusbar: {
+    characters: '字符',
+    lines: '行',
+    language: '语言',
+    encoding: '编码',
+    theme: '主题'
+  },
+  editor: {
+    placeholder: '开始写作... (输入 # 创建标题)',
+    empty: '空文档'
+  },
+  settings: {
+    title: '设置',
+    general: '通用',
+    appearance: '外观',
+    language: '语言',
+    theme: '主题',
+    themeLight: '浅色',
+    themeDark: '深色',
+    themeSystem: '跟随系统',
+    export: '导出',
+    pandocPath: 'Pandoc 路径',
+    pandocPathHint: '请输入 Pandoc 可执行文件的完整路径',
+    pandocDownload: '未安装 Pandoc？',
+    pandocDownloadLink: '点击这里下载',
+    browse: '浏览',
+    autoSearch: '自动搜索',
+    searching: '搜索中...',
+    pandocFound: '已找到 Pandoc',
+    pandocNotFound: '未找到 Pandoc，请手动安装',
+    pandocSearchError: '搜索失败，请在 Electron 环境中使用',
+    save: '保存设置',
+    cancel: '取消'
+  },
+  dialog: {
+    unsavedChanges: '当前文件未保存，是否继续？',
+    saveFailed: '保存失败',
+    exportSuccess: '导出成功',
+    exportFailed: '导出失败',
+    pandocNotFound: '未找到 Pandoc，请检查路径设置',
+    pandocRequired: '导出 Word 需要 Pandoc，请在设置中配置'
+  },
+  status: {
+    modified: '●',
+    saved: '已保存',
+    unsaved: '未保存'
+  }
+}

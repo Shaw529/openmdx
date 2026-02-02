@@ -1,0 +1,192 @@
+/**
+ * 打印样式表
+ * 用于 PDF 导出时应用专业的打印样式
+ */
+
+/* 打印模式下的基础样式 */
+@media print {
+  /* 隐藏不需要打印的元素 */
+  .no-print,
+  button,
+  [role="button"],
+  .ProseMirror-menubar,
+  .ProseMirror-menu,
+  .sidebar,
+  .tabbar,
+  .statusbar,
+  .menubar {
+    display: none !important;
+  }
+
+  /* 编辑器容器样式 */
+  .ProseMirror {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-family: 'SimSun', '宋体', 'Times New Roman', serif !important;
+    font-size: 12pt !important;
+    line-height: 1.6 !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+  }
+
+  /* 标题样式 */
+  .ProseMirror h1,
+  .ProseMirror h2,
+  .ProseMirror h3,
+  .ProseMirror h4,
+  .ProseMirror h5,
+  .ProseMirror h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    color: #000000 !important;
+    font-weight: 600 !important;
+    margin-top: 1.5em !important;
+    margin-bottom: 0.5em !important;
+  }
+
+  .ProseMirror h1 {
+    font-size: 24pt !important;
+    border-bottom: 2px solid #000000 !important;
+    padding-bottom: 0.5em !important;
+  }
+
+  .ProseMirror h2 {
+    font-size: 18pt !important;
+    border-bottom: 1px solid #cccccc !important;
+    padding-bottom: 0.3em !important;
+  }
+
+  .ProseMirror h3 {
+    font-size: 14pt !important;
+  }
+
+  .ProseMirror h4 {
+    font-size: 12pt !important;
+  }
+
+  /* 段落样式 */
+  .ProseMirror p {
+    margin: 0.5em 0 !important;
+    text-align: justify !important;
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* 列表样式 */
+  .ProseMirror ul,
+  .ProseMirror ol {
+    margin: 0.5em 0 !important;
+    padding-left: 2em !important;
+  }
+
+  .ProseMirror li {
+    margin: 0.25em 0 !important;
+  }
+
+  /* 引用样式 */
+  .ProseMirror blockquote {
+    border-left: 4px solid #4880bd !important;
+    padding-left: 1em !important;
+    margin: 1em 0 !important;
+    color: #333333 !important;
+    page-break-inside: avoid;
+  }
+
+  /* 代码块样式 */
+  .ProseMirror pre {
+    background: #f4f4f4 !important;
+    border: 1px solid #dddddd !important;
+    padding: 1em !important;
+    border-radius: 4px !important;
+    overflow-x: auto !important;
+    page-break-inside: avoid;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+    font-size: 10pt !important;
+  }
+
+  .ProseMirror code {
+    background: #f4f4f4 !important;
+    padding: 0.2em 0.4em !important;
+    border-radius: 3px !important;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+    font-size: 10pt !important;
+  }
+
+  /* 表格样式 */
+  .ProseMirror table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 1em 0 !important;
+    page-break-inside: avoid;
+  }
+
+  .ProseMirror th,
+  .ProseMirror td {
+    border: 1px solid #000000 !important;
+    padding: 0.5em !important;
+    text-align: left !important;
+  }
+
+  .ProseMirror th {
+    background: #f4f4f4 !important;
+    font-weight: 600 !important;
+  }
+
+  /* 图片样式 */
+  .ProseMirror img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid;
+  }
+
+  /* 链接样式 */
+  .ProseMirror a {
+    color: #4880bd !important;
+    text-decoration: underline !important;
+  }
+
+  /* 水平线样式 */
+  .ProseMirror hr {
+    border: none !important;
+    border-top: 1px solid #cccccc !important;
+    margin: 2em 0 !important;
+  }
+
+  /* 分页控制 */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+
+  img, table, pre, blockquote {
+    page-break-inside: avoid;
+  }
+
+  /* 避免孤行和寡行 */
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+}
+
+/* 打印模式类 - 当添加此类时应用打印样式 */
+body.print-mode .ProseMirror {
+  font-family: 'SimSun', '宋体', 'Times New Roman', serif !important;
+  font-size: 12pt !important;
+  line-height: 1.6 !important;
+  color: #000000 !important;
+  background: #ffffff !important;
+}
+
+body.print-mode .ProseMirror h1,
+body.print-mode .ProseMirror h2,
+body.print-mode .ProseMirror h3,
+body.print-mode .ProseMirror h4,
+body.print-mode .ProseMirror h5,
+body.print-mode .ProseMirror h6 {
+  color: #000000 !important;
+}
+
+body.print-mode .ProseMirror p {
+  text-align: justify !important;
+}

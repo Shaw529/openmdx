@@ -1,0 +1,111 @@
+export default {
+  app: {
+    title: 'OpenMDtx',
+    version: 'v1.0.0'
+  },
+  menu: {
+    file: 'File',
+    edit: 'Edit',
+    paragraph: 'Paragraph',
+    format: 'Format',
+    view: 'View',
+    help: 'Help',
+    new: 'New',
+    open: 'Open',
+    save: 'Save',
+    exportPDF: 'Export PDF',
+    exportHTML: 'Export HTML',
+    exportWord: 'Export Word',
+    undo: 'Undo',
+    redo: 'Redo',
+    cut: 'Cut',
+    copy: 'Copy',
+    paste: 'Paste',
+    selectAll: 'Select All',
+    heading1: 'Heading 1',
+    heading2: 'Heading 2',
+    heading3: 'Heading 3',
+    heading4: 'Heading 4',
+    heading5: 'Heading 5',
+    heading6: 'Heading 6',
+    plainText: 'Plain Text',
+    codeBlock: 'Code Block',
+    quoteBlock: 'Quote Block',
+    bulletList: 'Bullet List',
+    orderedList: 'Ordered List',
+    taskList: 'Task List',
+    bold: 'Bold',
+    italic: 'Italic',
+    strike: 'Strikethrough',
+    code: 'Code',
+    link: 'Link',
+    image: 'Image',
+    table: 'Table',
+    toggleSidebar: 'Toggle Sidebar',
+    about: 'About'
+  },
+  toolbar: {
+    new: 'New',
+    open: 'Open',
+    save: 'Save',
+    export: 'Export',
+    pdf: 'PDF',
+    html: 'HTML',
+    word: 'Word',
+    settings: 'Settings'
+  },
+  sidebar: {
+    outline: 'Outline',
+    noOutline: 'No outline',
+    addHeadings: 'Add headings to generate outline',
+    show: 'Show outline',
+    hide: 'Hide outline'
+  },
+  statusbar: {
+    characters: 'Characters',
+    lines: 'Lines',
+    language: 'Language',
+    encoding: 'Encoding',
+    theme: 'Theme'
+  },
+  editor: {
+    placeholder: 'Start writing... (Type # for heading)',
+    empty: 'Empty document'
+  },
+  settings: {
+    title: 'Settings',
+    general: 'General',
+    appearance: 'Appearance',
+    language: 'Language',
+    theme: 'Theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    themeSystem: 'System',
+    export: 'Export',
+    pandocPath: 'Pandoc Path',
+    pandocPathHint: 'Enter the full path to Pandoc executable',
+    pandocDownload: 'Don\'t have Pandoc?',
+    pandocDownloadLink: 'Download here',
+    browse: 'Browse',
+    autoSearch: 'Auto Search',
+    searching: 'Searching...',
+    pandocFound: 'Pandoc found',
+    pandocNotFound: 'Pandoc not found. Please install manually',
+    pandocSearchError: 'Search failed. Please use in Electron environment',
+    save: 'Save',
+    cancel: 'Cancel'
+  },
+  dialog: {
+    unsavedChanges: 'There are unsaved changes. Continue?',
+    saveFailed: 'Save failed',
+    exportSuccess: 'Export successful',
+    exportFailed: 'Export failed',
+    pandocNotFound: 'Pandoc not found. Please check path settings.',
+    pandocRequired: 'Word export requires Pandoc. Please configure in settings.'
+  },
+  status: {
+    modified: '●',
+    saved: 'Saved',
+    unsaved: 'Unsaved'
+  }
+}
