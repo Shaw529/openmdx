@@ -4,10 +4,12 @@
 
 **🚀 一个强大的 Markdown 编辑器，基于 Electron + React + TipTap 构建**
 
+[![CI](https://github.com/Shaw529/openmdx/actions/workflows/ci.yml/badge.svg)](https://github.com/Shaw529/openmdx/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Electron](https://img.shields.io/badge/Electron-40.1.0-999999?logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.0-61DAFB?logo=react)](https://react.dev/)
 [![TipTap](https://img.shields.io/badge/TipTap-3.18.0-6B42F4?logo=tiptap)](https://tiptap.dev/)
+[![Platform](https://img.shields.io/badge/Platform-Windows-0078D7?logo=windows)](https://www.microsoft.com/windows)
 
 [特性](#-特性) • [快速开始](#-快速开始) • [使用指南](#-使用指南) • [快捷键](#-快捷键) • [开发](#-开发) • [许可证](#-许可证)
 
@@ -106,16 +108,32 @@
 - **快捷键**：`Ctrl+N` (Windows/Linux)
 - **工具栏**：点击新建按钮
 
-### 打开文件
+### 系统要求
 
-- **菜单栏**：文件 → 打开
-- **快捷键**：`Ctrl+O` (Windows/Linux)
-- **拖放**：直接将 .md 文件拖到编辑器窗口
+- **操作系统**: Windows 10/11 (64-bit)
+- **RAM**: 4GB 最低，8GB 推荐
+- **磁盘空间**: 500MB 可用空间
+
+### 安装应用
+
+#### 方式一：使用安装程序（推荐）
+
+1. 下载 `OpenMDtx Setup 1.1.0.exe`
+2. 双击运行安装程序
+3. 选择安装位置
+4. 点击"安装"按钮
+5. 从桌面或开始菜单启动
+
+#### 方式二：使用绿色便携版
+
+1. 下载绿色便携版压缩包
+2. 解压到任意目录
+3. 双击 `OpenMDtx.exe` 运行（无需安装）
 
 ### 保存文件
 
 - **菜单栏**：文件 → 保存
-- **快捷键**：`Ctrl+S` (Windows/Linux)
+- **快捷键**：`Ctrl+S`
 - **工具栏**：点击保存按钮
 
 ### 导出文档

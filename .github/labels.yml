@@ -1,0 +1,87 @@
+- name: bug
+  color: d73a4a
+  description: Something isn't working
+
+- name: enhancement
+  color: a2eeef
+  description: New feature or request
+
+- name: documentation
+  color: 0075ca
+  description: Improvements or additions to documentation
+
+- name: duplicate
+  color: cfd3d7
+  description: This issue or pull request already exists
+
+- name: good first issue
+  color: 7057ff
+  description: Good for newcomers
+
+- name: help wanted
+  color: 008672
+  description: Extra attention is needed
+
+- name: invalid
+  color: e4e669
+  description: This doesn't seem right
+
+- name: question
+  color: d876e3
+  description: Further information is requested
+
+- name: wontfix
+  color: ffffff
+  description: This will not be worked on
+
+- name: critical
+  color: b60205
+  description: Critical priority
+
+- name: high priority
+  color: ff9f1c
+  description: High priority
+
+- name: low priority
+  color: 0e8a16
+  description: Low priority
+
+- name: performance
+  color: fbca04
+  description: Performance related issues
+
+- name: security
+  color: 02d7e1
+  description: Security related issues
+
+- name: windows
+  color: 66def3
+  description: Windows platform specific
+
+- name: export
+  color: 1d76db
+  description: Related to export functionality
+
+- name: i18n
+  color: bfd4f2
+  description: Internationalization related
+
+- name: ui
+  color: fef2c0
+  description: User interface related
+
+- name: electron
+  color: 9c2ad2
+  description: Electron related issues
+
+- name: build
+  color: ededed
+  description: Build and packaging related
+
+- name: dependencies
+  color: 0366d6
+  description: Pull requests that update dependencies
+
+- name: portable
+  color: cccccc
+  description: Portable version related

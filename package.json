@@ -104,18 +104,6 @@
       "deleteAppDataOnUninstall": false,
       "menuCategory": "OpenMDtx",
       "license": "LICENSE"
-    },
-    "mac": {
-      "target": [
-        "dmg"
-      ],
-      "icon": "build/icon.icns"
-    },
-    "linux": {
-      "target": [
-        "AppImage"
-      ],
-      "icon": "build/icon.png"
     }
   }
 }
