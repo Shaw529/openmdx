@@ -10,15 +10,19 @@ import { TableRow } from '@tiptap/extension-table-row'
 import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
-import { common, createLowlight } from 'lowlight'
+import { all, createLowlight } from 'lowlight'
+import { Fragment, Slice } from '@tiptap/pm/model'
 import { useEffect, memo, useRef, useMemo, forwardRef, useImperativeHandle } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
+import { useSettings } from '../contexts/SettingsContext'
 import { ClipboardTextParser } from '../extensions/ClipboardTextParser'
 import { MarkdownCopy } from '../extensions/MarkdownCopy'
 import HeadingWithId from '../extensions/HeadingWithId'
 import HeadingIdPlugin from '../extensions/HeadingIdPlugin'
+import { MermaidBlock } from '../extensions/MermaidBlock'
+import { hasMermaidBlocks, convertMarkdownToTipTapNodes } from '../utils/markdownToTipTap'
 
-const lowlight = createLowlight(common)
+const lowlight = createLowlight(all)
 
 interface EditorProps {
   content: string
@@ -41,6 +45,7 @@ export interface EditorRef {
  */
 const Editor = forwardRef<EditorRef, EditorProps>(({ content, onChange, onReady }, ref) => {
   const { t } = useLanguage()
+  const { settings, updateSettings } = useSettings()
   const prevContentRef = useRef<string>()
 
   const editor = useEditor({
@@ -88,6 +93,7 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ content, onChange, onReady 
           class: 'bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4',
         },
       }),
+      MermaidBlock, // Mermaid 图表支持
       HeadingIdPlugin, // 自动为标题分配 ID 的插件
     ],
     content,
@@ -107,7 +113,24 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ content, onChange, onReady 
 
     // 只在内容真正变化时更新编辑器
     if (content !== prevContentRef.current && content !== editor.getHTML()) {
-      editor.commands.setContent(content)
+      // 检查内容是否包含 mermaid 代码块
+      // 如果包含，使用节点方式创建，确保正确渲染 mermaid 节点
+      if (hasMermaidBlocks(content)) {
+        const nodes = convertMarkdownToTipTapNodes(content, editor.schema)
+
+        // 使用正确的方式插入节点（参考 ClipboardTextParser 的实现）
+        if (nodes.length > 0) {
+          // 创建包含所有节点的 Fragment
+          const fragment = Fragment.fromArray(nodes)
+          const slice = new Slice(fragment, 0, 0)
+
+          // 替换整个文档内容
+          const tr = editor.state.tr.replaceWith(0, editor.state.doc.content.size, slice.content)
+          editor.view.dispatch(tr)
+        }
+      } else {
+        editor.commands.setContent(content)
+      }
       prevContentRef.current = content
     }
   }, [content, editor])
@@ -156,6 +179,30 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ content, onChange, onReady 
       window.removeEventListener('message', handleMessage)
     }
   }, [])
+
+  // 应用字体大小到 CSS 变量
+  useEffect(() => {
+    document.documentElement.style.setProperty('--editor-font-size', `${settings.fontSize}px`)
+  }, [settings.fontSize])
+
+  // 监听 Ctrl + 滚轮缩放字体
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault()
+        const delta = e.deltaY > 0 ? -1 : 1
+        const newSize = Math.max(12, Math.min(32, settings.fontSize + delta))
+        updateSettings({ fontSize: newSize })
+      }
+    }
+
+    const editorElement = document.querySelector('.ProseMirror')
+    editorElement?.addEventListener('wheel', handleWheel, { passive: false })
+
+    return () => {
+      editorElement?.removeEventListener('wheel', handleWheel)
+    }
+  }, [settings.fontSize, updateSettings])
 
   // 计算字符数（使用useMemo优化性能）
   const charCount = useMemo(() => {

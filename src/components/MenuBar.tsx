@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
+import { MERMAID_TEMPLATES } from '../constants/mermaidTemplates'
+import type { MermaidDiagramType } from '../utils/mermaidRenderer'
 
 interface MenuBarProps {
   editor: any
@@ -16,11 +18,11 @@ interface MenuBarProps {
   onShowAbout: () => void
 }
 
-type MenuType = 'file' | 'edit' | 'paragraph' | 'format' | 'view' | 'help' | null
+type MenuType = 'file' | 'edit' | 'paragraph' | 'diagram' | 'format' | 'view' | 'help' | null
 
 /**
  * 经典下拉菜单栏组件
- * 提供6个主菜单：文件、编辑、段落、格式、视图、帮助
+ * 提供7个主菜单：文件、编辑、段落、图表、格式、视图、帮助
  */
 function MenuBar({
   editor,
@@ -113,6 +115,30 @@ function MenuBar({
     </div>
   )
 
+  // 图表菜单
+  const DiagramMenu = activeMenu === 'diagram' && (
+    <div className="absolute top-full left-0 min-w-[180px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg py-1 z-50">
+      {MERMAID_TEMPLATES.map((template) => {
+        const typeNameKey = template.type as keyof typeof t.mermaid
+        return (
+          <MenuItem
+            key={template.type}
+            onClick={() => {
+              const type = template.type as MermaidDiagramType
+              editor?.chain().focus().insertMermaidBlock({
+                diagramType: type,
+                content: template.template,
+              }).run()
+              setActiveMenu(null)
+            }}
+            label={t.mermaid[typeNameKey]}
+            disabled={!canEdit}
+          />
+        )
+      })}
+    </div>
+  )
+
   // 格式菜单
   const FormatMenu = activeMenu === 'format' && (
     <div className="absolute top-full left-0 min-w-[180px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg py-1 z-50">
@@ -181,6 +207,17 @@ function MenuBar({
         {ParagraphMenu}
       </div>
 
+      {/* 图表菜单 */}
+      <div className="relative" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={(e) => toggleMenu('diagram', e)}
+          className="px-3 py-1 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+        >
+          {t.menu.diagram}
+        </button>
+        {DiagramMenu}
+      </div>
+
       {/* 格式菜单 */}
       <div className="relative" onClick={(e) => e.stopPropagation()}>
         <button
@@ -242,7 +279,7 @@ function MenuItem({
       }`}
     >
       <span>{label}</span>
-      {shortcut && <span className="text-xs text-gray-400 dark:text-gray-500 ml-8">{shortcut}</span>}
+      {shortcut && <span className="text-xs text-gray-400 dark:text-gray-500">{shortcut}</span>}
     </button>
   )
 }

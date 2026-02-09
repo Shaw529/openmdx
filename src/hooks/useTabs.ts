@@ -238,17 +238,22 @@ export function useTabs({ onTabChange }: UseTabsParams = {}) {
       const fileName = filePath.split(/[/\\]/).pop() || '未命名'
       const fileExtension = filePath.split('.').pop()?.toLowerCase()
 
-      // 处理 Markdown 文件：转换为 HTML 富文本格式
+      // 处理 Markdown 文件内容
       let content = fileResult.content
       if (fileExtension === 'md' || fileExtension === 'markdown') {
-        try {
-          // 使用 marked 将 Markdown 转换为 HTML
-          content = marked(content) as string
-        } catch (error) {
-          console.warn('Markdown 解析失败，使用原始内容:', error)
-          // 解析失败时使用原始内容
-          content = fileResult.content
+        // 检查是否包含 mermaid 代码块
+        const hasMermaid = /```mermaid\r?\n/.test(content)
+
+        if (!hasMermaid) {
+          // 没有 mermaid，直接用 marked 转换
+          try {
+            content = marked(content) as string
+          } catch (error) {
+            console.warn('Markdown 解析失败，使用原始内容:', error)
+            content = fileResult.content
+          }
         }
+        // 如果有 mermaid，保持原始格式，让 Editor 组件处理
       }
 
       // 创建新页签

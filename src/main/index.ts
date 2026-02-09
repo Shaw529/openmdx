@@ -129,26 +129,39 @@ ipcMain.handle('show-open-dialog', async () => {
 
 ipcMain.handle('export-pdf', async (event) => {
   if (!mainWindow) return { success: false, error: 'No window' }
-  const result = await dialog.showSaveDialog(mainWindow, {
+
+  console.log('[PDF Export] Starting export process...')
+
+  const saveResult = await dialog.showSaveDialog(mainWindow, {
     filters: [{ name: 'PDF Files', extensions: ['pdf'] }]
   })
 
-  if (result.canceled || !result.filePath) {
+  if (saveResult.canceled || !saveResult.filePath) {
+    console.log('[PDF Export] Export canceled by user')
     return { canceled: true }
   }
+
+  console.log('[PDF Export] Save path:', saveResult.filePath)
 
   let printWindow: BrowserWindow | null = null
   let tempHtmlPath: string | null = null
 
   try {
     // 从渲染进程获取格式化的 HTML 内容（与编辑器样式一致）
+    console.log('[PDF Export] Getting content from renderer process...')
     const htmlContent = await mainWindow.webContents.executeJavaScript(`
       (() => {
         const editor = document.querySelector('.ProseMirror');
-        if (!editor) return '';
+        if (!editor) {
+          console.error('[PDF Export] Editor not found');
+          return '';
+        }
 
+        console.log('[PDF Export] Editor found, getting content...');
         // 获取编辑器内容
         const content = editor.innerHTML;
+
+        console.log('[PDF Export] Content length:', content.length);
 
         // 返回格式化的 HTML（与编辑器 index.css 完全一致）
         return \`
@@ -276,16 +289,22 @@ ipcMain.handle('export-pdf', async (event) => {
       })()
     `)
 
-    if (!htmlContent) {
-      return { success: false, error: 'Failed to get content' }
+    if (!htmlContent || htmlContent.length === 0) {
+      console.error('[PDF Export] Failed to get content from editor')
+      return { success: false, error: 'Failed to get content from editor. Is the editor empty?' }
     }
 
+    console.log('[PDF Export] Got HTML content, length:', htmlContent.length)
+
     // 创建临时 HTML 文件
-    const tempDir = path.dirname(result.filePath)
+    const tempDir = path.dirname(saveResult.filePath)
     tempHtmlPath = path.join(tempDir, 'temp_print.html')
+    console.log('[PDF Export] Creating temp file:', tempHtmlPath)
     await fs.writeFile(tempHtmlPath, htmlContent, 'utf-8')
+    console.log('[PDF Export] Temp file created successfully')
 
     // 创建打印窗口
+    console.log('[PDF Export] Creating print window...')
     printWindow = new BrowserWindow({
       width: 800,
       height: 1200,
@@ -297,17 +316,24 @@ ipcMain.handle('export-pdf', async (event) => {
     })
 
     // 加载临时 HTML 文件
+    console.log('[PDF Export] Loading temp file into print window...')
     await printWindow.loadFile(tempHtmlPath)
+    console.log('[PDF Export] File loaded')
 
     // 等待页面完全加载
     await new Promise<void>((resolve) => {
-      printWindow!.webContents.on('did-finish-load', () => resolve())
+      printWindow!.webContents.on('did-finish-load', () => {
+        console.log('[PDF Export] Page finished loading')
+        resolve()
+      })
     })
 
     // 额外等待确保样式应用
+    console.log('[PDF Export] Waiting for styles to apply...')
     await new Promise(resolve => setTimeout(resolve, 500))
 
     // 生成 PDF
+    console.log('[PDF Export] Generating PDF...')
     const pdf = await printWindow.webContents.printToPDF({
       pageSize: 'A4',
       printBackground: true,
@@ -318,40 +344,53 @@ ipcMain.handle('export-pdf', async (event) => {
       marginRight: 20,
       landscape: false,
     })
+    console.log('[PDF Export] PDF generated, size:', pdf.length, 'bytes')
 
     // 保存 PDF
-    await fs.writeFile(result.filePath, pdf)
+    console.log('[PDF Export] Saving PDF to:', saveResult.filePath)
+    await fs.writeFile(saveResult.filePath, pdf)
+    console.log('[PDF Export] PDF saved successfully')
 
     // 关闭打印窗口
     if (printWindow && !printWindow.isDestroyed()) {
       printWindow.close()
+      console.log('[PDF Export] Print window closed')
     }
 
     // 删除临时文件
     if (tempHtmlPath) {
       try {
         await fs.unlink(tempHtmlPath)
+        console.log('[PDF Export] Temp file deleted:', tempHtmlPath)
+        tempHtmlPath = null
       } catch (err) {
-        console.warn('Failed to delete temp file:', err)
+        console.error('[PDF Export] Failed to delete temp file:', err)
       }
     }
 
-    return { success: true, filePath: result.filePath }
+    console.log('[PDF Export] Export completed successfully')
+    return { success: true, filePath: saveResult.filePath }
   } catch (error) {
+    const errorMessage = (error as Error).message
+    console.error('[PDF Export] Error during export:', errorMessage)
+    console.error('[PDF Export] Error stack:', (error as Error).stack)
+
     // 清理资源
     if (printWindow && !printWindow.isDestroyed()) {
       printWindow.close()
+      console.log('[PDF Export] Print window closed (cleanup)')
     }
 
     if (tempHtmlPath) {
       try {
         await fs.unlink(tempHtmlPath)
+        console.log('[PDF Export] Temp file deleted (cleanup):', tempHtmlPath)
       } catch (err) {
-        console.warn('Failed to delete temp file:', err)
+        console.error('[PDF Export] Failed to delete temp file (cleanup):', err)
       }
     }
 
-    return { success: false, error: (error as Error).message }
+    return { success: false, error: errorMessage }
   }
 })
 

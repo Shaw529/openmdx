@@ -3,6 +3,7 @@ import { STORAGE_KEYS } from '../config/constants'
 
 interface Settings {
   pandocPath: string
+  fontSize: number  // 字体大小（px），默认 16
 }
 
 interface SettingsContextType {
@@ -11,7 +12,8 @@ interface SettingsContextType {
 }
 
 const defaultSettings: Settings = {
-  pandocPath: ''
+  pandocPath: '',
+  fontSize: 16  // 默认 16px
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)

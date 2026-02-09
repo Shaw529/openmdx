@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
 import { checkElectronAPI } from '../utils/electronAPI'
 import { extractFileName, removeFileExtension } from '../utils/fileUtils'
+import { processMermaidInHTML } from '../utils/mermaidExportHelper'
 
 interface UseExportParams {
   content: string
@@ -298,6 +299,9 @@ export function useExport({
    * 在Electron环境中使用原生PDF导出
    */
   const handleExportPDF = useCallback(async () => {
+    // 处理 Mermaid 图表
+    const processedContent = await processMermaidInHTML(content, 'pdf')
+
     if (checkElectronAPI()) {
       // Electron环境：使用原生PDF导出
       const result = await window.electronAPI!.exportPDF()
@@ -311,7 +315,7 @@ export function useExport({
       const fileName = extractFileName(currentFile)
       const baseName = currentFile ? removeFileExtension(fileName, '.md') : 'untitled'
 
-      const htmlDocument = generateHTMLDocument(content, baseName, true, resolvedTheme, language)
+      const htmlDocument = generateHTMLDocument(processedContent, baseName, true, resolvedTheme, language)
 
       const printWindow = window.open('', '_blank')
       if (printWindow) {
@@ -328,11 +332,14 @@ export function useExport({
   /**
    * 导出为HTML
    */
-  const handleExportHTML = useCallback(() => {
+  const handleExportHTML = useCallback(async () => {
+    // 处理 Mermaid 图表
+    const processedContent = await processMermaidInHTML(content, 'html')
+
     const fileName = extractFileName(currentFile)
     const baseName = removeFileExtension(fileName, '.md')
 
-    const htmlDocument = generateHTMLDocument(content, baseName, false, resolvedTheme, language)
+    const htmlDocument = generateHTMLDocument(processedContent, baseName, false, resolvedTheme, language)
 
     const blob = new Blob([htmlDocument], { type: 'text/html;charset=utf-8' })
     const url = URL.createObjectURL(blob)
@@ -362,10 +369,13 @@ export function useExport({
           return
         }
 
+        // 处理 Mermaid 图表（Word 导出格式）
+        const processedContent = await processMermaidInHTML(content, 'word')
+
         // 生成标准 HTML 文档（使用打印样式，浅色主题）
         const fileName = extractFileName(currentFile)
         const baseName = currentFile ? removeFileExtension(fileName, '.md') : '未命名'
-        const htmlDocument = generateHTMLDocument(content, baseName, true, 'light', language)
+        const htmlDocument = generateHTMLDocument(processedContent, baseName, true, 'light', language)
 
         const defaultFileName = `${baseName}.docx`
 

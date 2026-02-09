@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS 变量 */
+:root {
+  --editor-font-size: 16px;
+}
+
 /* 自定义滚动条 */
 ::-webkit-scrollbar {
   width: 8px;
@@ -34,13 +39,239 @@
   outline: none;
   padding: 2rem;
   min-height: 100vh;
-  font-size: 16px;
+  font-size: var(--editor-font-size);
   line-height: 1.8;
   color: #333;
 }
 
 .dark .ProseMirror {
   color: #e0e0e0;
+}
+
+/* ========== 代码块语法高亮样式 (VS Code Dark+ 风格) ========== */
+
+/* 基础代码块样式 */
+.ProseMirror pre {
+  background: #1e1e1e;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1em 0;
+  position: relative;
+}
+
+.dark .ProseMirror pre {
+  background: #1e1e1e;
+}
+
+/* 代码块内联样式 */
+.ProseMirror pre code {
+  background: transparent;
+  color: #d4d4d4;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+/* 语法高亮颜色定义 */
+.hljs {
+  background: transparent;
+  color: #d4d4d4;
+}
+
+/* 关键字 - 蓝色 */
+.hljs-keyword,
+.hljs-built_in {
+  color: #569cd6;
+}
+
+/* 字符串 - 橙色 */
+.hljs-string {
+  color: #ce9178;
+}
+
+/* 注释 - 绿色 */
+.hljs-comment,
+.hljs-quote {
+  color: #6a9955;
+  font-style: italic;
+}
+
+/* 函数名 - 黄色 */
+.hljs-function,
+.hljs-title {
+  color: #dcdcaa;
+}
+
+/* 数字 - 浅绿色 */
+.hljs-number,
+.hljs-literal {
+  color: #b5cea8;
+}
+
+/* 类名 - 青色 */
+.hljs-class,
+.hljs-type {
+  color: #4ec9b0;
+}
+
+/* 操作符 - 白色 */
+.hljs-operator {
+  color: #d4d4d4;
+}
+
+/* 标签 - 蓝色 */
+.hljs-tag {
+  color: #569cd6;
+}
+
+/* 属性 - 浅蓝色 */
+.hljs-attr,
+.hljs-property {
+  color: #9cdcfe;
+}
+
+/* 变量 - 浅蓝色 */
+.hljs-variable {
+  color: #9cdcfe;
+}
+
+/* 常量 - 紫色 */
+.hljs-constant {
+  color: #4fc1ff;
+}
+
+/* 正则表达式 - 橙红色 */
+.hljs-regexp {
+  color: #d16969;
+}
+
+/* 符号 - 红色 */
+.hljs-symbol {
+  color: #f44336;
+}
+
+/* 参数 - 浅蓝色 */
+.hljs-params {
+  color: #d4d4d4;
+}
+
+/* 模块名 - 黄色 */
+.hljs-module {
+  color: #dcdcaa;
+}
+
+/* 特殊字符 - 橙色 */
+.hljs-emphasis {
+  color: #ce9178;
+  font-style: italic;
+}
+
+/* 强调 - 橙色 */
+.hljs-strong {
+  color: #ce9178;
+  font-weight: bold;
+}
+
+/* 链接 - 蓝色 */
+.hljs-link {
+  color: #569cd6;
+  text-decoration: underline;
+}
+
+/* 删除线 - 灰色 */
+.hljs-deletion {
+  color: #808080;
+  text-decoration: line-through;
+}
+
+/* 添加 - 绿色 */
+.hljs-addition {
+  color: #6a9955;
+}
+
+/* 错误 - 红色 */
+.hljs-error {
+  color: #f44336;
+}
+
+/* 元素名称 - 黄色 */
+.hljs-name {
+  color: #dcdcaa;
+}
+
+/* 标题标签 - 蓝色 */
+.hljs-name,
+.hljs-tag {
+  color: #569cd6;
+}
+
+/* 标题属性 - 浅蓝色 */
+.hljs-attr {
+  color: #9cdcfe;
+}
+
+/* 标题值 - 橙色 */
+.hljs-string {
+  color: #ce9178;
+}
+
+/* HTML/XML 标签 */
+.hljs-tag {
+  color: #569cd6;
+}
+
+.hljs-tag .hljs-name {
+  color: #569cd6;
+}
+
+.hljs-tag .hljs-attr {
+  color: #9cdcfe;
+}
+
+/* CSS 选择器和属性 */
+.hljs-selector-tag,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-selector-attr,
+.hljs-selector-pseudo {
+  color: #d7ba7d;
+}
+
+.hljs-property {
+  color: #9cdcfe;
+}
+
+.hljs-attribute {
+  color: #9cdcfe;
+}
+
+/* 布尔值 - 蓝色 */
+.hljs-bullet {
+  color: #569cd6;
+}
+
+/* 代码注入 */
+.hljs-code {
+  color: #dcdcaa;
+}
+
+/* 格式化字符串 */
+.hljs-subst {
+  color: #d4d4d4;
+}
+
+/* 语言特定的修饰符 */
+.hljs-meta {
+  color: #d7ba7d;
+}
+
+.hljs-meta-keyword {
+  color: #569cd6;
+}
+
+.hljs-meta-string {
+  color: #ce9178;
 }
 
 .ProseMirror p {

@@ -1,12 +1,13 @@
 export default {
   app: {
     title: 'OpenMDtx',
-    version: 'v1.0.0'
+    version: 'v1.2.0'
   },
   menu: {
     file: '文件',
     edit: '编辑',
     paragraph: '段落',
+    diagram: '图表',
     format: '格式',
     view: '视图',
     help: '帮助',
@@ -52,7 +53,11 @@ export default {
     pdf: 'PDF',
     html: 'HTML',
     word: 'Word',
-    settings: '设置'
+    settings: '设置',
+    zoomIn: '放大',
+    zoomOut: '缩小',
+    zoomReset: '重置',
+    zoomShortcut: '缩放：Ctrl + 滚轮'
   },
   sidebar: {
     outline: '大纲',
@@ -107,5 +112,56 @@ export default {
     modified: '●',
     saved: '已保存',
     unsaved: '未保存'
+  },
+  mermaid: {
+    insertDiagram: '插入图表',
+    selectDiagramType: '选择图表类型',
+    selectTheme: '选择主题风格',
+    theme: '主题',
+    flowchart: '流程图',
+    sequence: '时序图',
+    class: '类图',
+    state: '状态图',
+    gantt: '甘特图',
+    pie: '饼图',
+    mindmap: '思维导图',
+    er: 'ER图',
+    git: 'Git图',
+    timeline: '时间线',
+    journey: '用户旅程',
+    quadrant: '四象限图',
+    c4: 'C4架构图',
+    requirement: '需求图',
+    viewMode: {
+      source: '源码',
+      preview: '预览',
+      split: '拆分'
+    },
+    themeStyle: {
+      default: '默认',
+      dark: '暗色',
+      forest: '森林',
+      neutral: '中性',
+      base: '基础',
+      rainbow: '彩虹'
+    },
+    description: {
+      flowchart: '用于表示流程、算法和工作流',
+      sequence: '展示对象之间的交互顺序',
+      class: '展示类的结构和关系',
+      state: '展示对象的状态转换',
+      gantt: '项目进度和时间规划',
+      pie: '展示数据占比分布',
+      mindmap: '展示层次结构关系',
+      er: '实体关系图，用于数据库设计',
+      git: '展示 Git 提交历史',
+      timeline: '按时间顺序展示事件',
+      journey: '展示用户体验旅程',
+      quadrant: '技术评估和优先级矩阵',
+      c4: '系统架构上下文图',
+      requirement: '展示需求关系和层次'
+    },
+    renderError: '图表渲染失败',
+    invalidSyntax: '语法错误'
   }
 }

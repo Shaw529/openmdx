@@ -1,12 +1,13 @@
 export default {
   app: {
     title: 'OpenMDtx',
-    version: 'v1.0.0'
+    version: 'v1.2.0'
   },
   menu: {
     file: 'File',
     edit: 'Edit',
     paragraph: 'Paragraph',
+    diagram: 'Diagram',
     format: 'Format',
     view: 'View',
     help: 'Help',
@@ -52,7 +53,11 @@ export default {
     pdf: 'PDF',
     html: 'HTML',
     word: 'Word',
-    settings: 'Settings'
+    settings: 'Settings',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    zoomReset: 'Reset',
+    zoomShortcut: 'Zoom: Ctrl + Scroll'
   },
   sidebar: {
     outline: 'Outline',
@@ -107,5 +112,56 @@ export default {
     modified: '●',
     saved: 'Saved',
     unsaved: 'Unsaved'
+  },
+  mermaid: {
+    insertDiagram: 'Insert Diagram',
+    selectDiagramType: 'Select Diagram Type',
+    selectTheme: 'Select Theme Style',
+    theme: 'Theme',
+    flowchart: 'Flowchart',
+    sequence: 'Sequence Diagram',
+    class: 'Class Diagram',
+    state: 'State Diagram',
+    gantt: 'Gantt Chart',
+    pie: 'Pie Chart',
+    mindmap: 'Mind Map',
+    er: 'ER Diagram',
+    git: 'Git Graph',
+    timeline: 'Timeline',
+    journey: 'User Journey',
+    quadrant: 'Quadrant Chart',
+    c4: 'C4 Diagram',
+    requirement: 'Requirement Diagram',
+    viewMode: {
+      source: 'Source',
+      preview: 'Preview',
+      split: 'Split'
+    },
+    themeStyle: {
+      default: 'Default',
+      dark: 'Dark',
+      forest: 'Forest',
+      neutral: 'Neutral',
+      base: 'Base',
+      rainbow: 'Rainbow'
+    },
+    description: {
+      flowchart: 'Flow diagrams, algorithms and workflows',
+      sequence: 'Show interactions between objects',
+      class: 'Show class structure and relationships',
+      state: 'Show state transitions of an object',
+      gantt: 'Project timeline and scheduling',
+      pie: 'Show data distribution',
+      mindmap: 'Show hierarchical relationships',
+      er: 'Entity-Relationship diagrams',
+      git: 'Show Git commit history',
+      timeline: 'Chronological display of events',
+      journey: 'Show user experience journey',
+      quadrant: 'Technology evaluation matrix',
+      c4: 'System architecture context diagram',
+      requirement: 'Show requirement relationships'
+    },
+    renderError: 'Diagram render failed',
+    invalidSyntax: 'Invalid syntax'
   }
 }

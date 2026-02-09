@@ -1,9 +1,11 @@
 import { useRef, useEffect, memo, useState } from 'react'
-import { FileText, Moon, Sun, Settings as SettingsIcon } from 'lucide-react'
+import { FileText, Moon, Sun, Settings as SettingsIcon, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { useSettings } from '../contexts/SettingsContext'
 import { THEMES } from '../config/constants'
 import ExportMenu from './ExportMenu'
+import { MermaidToolbar } from './MermaidToolbar'
 
 interface ToolbarProps {
   currentFile: string | null
@@ -36,8 +38,27 @@ function Toolbar({
 }: ToolbarProps) {
   const { t } = useLanguage()
   const { theme } = useTheme()
+  const { settings, updateSettings } = useSettings()
   const [showExportMenu, setShowExportMenu] = useState(false)
   const exportMenuRef = useRef<HTMLDivElement>(null)
+
+  // 计算缩放百分比
+  const zoomPercentage = Math.round((settings.fontSize / 16) * 100)
+
+  // 处理缩放操作
+  const handleZoomIn = () => {
+    const newSize = Math.min(32, settings.fontSize + 1)
+    updateSettings({ fontSize: newSize })
+  }
+
+  const handleZoomOut = () => {
+    const newSize = Math.max(12, settings.fontSize - 1)
+    updateSettings({ fontSize: newSize })
+  }
+
+  const handleZoomReset = () => {
+    updateSettings({ fontSize: 16 })
+  }
 
   // 点击外部关闭导出菜单
   useEffect(() => {
@@ -111,6 +132,38 @@ function Toolbar({
             onExportWord={onExportWord}
             onOpenSettings={() => setShowSettings(true)}
           />
+        </div>
+
+        <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+
+        {/* Mermaid 图表插入 */}
+        <MermaidToolbar />
+
+        <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+
+        {/* 缩放控制 */}
+        <div className="flex items-center gap-1" title={t.toolbar.zoomShortcut || '缩放：Ctrl + 滚轮'}>
+          <button
+            onClick={handleZoomOut}
+            className="p-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+            title={t.toolbar.zoomOut || '缩小'}
+          >
+            <ZoomOut size={16} />
+          </button>
+          <button
+            onClick={handleZoomReset}
+            className="px-2 py-1 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors min-w-[3.5rem]"
+            title={`${zoomPercentage}%`}
+          >
+            {zoomPercentage}%
+          </button>
+          <button
+            onClick={handleZoomIn}
+            className="p-1.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+            title={t.toolbar.zoomIn || '放大'}
+          >
+            <ZoomIn size={16} />
+          </button>
         </div>
 
         <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
