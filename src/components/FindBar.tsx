@@ -32,7 +32,6 @@ function FindBar({ editor, onClose }: FindBarProps) {
     if (!editor || !searchTerm) return []
     
     const allMatches: Match[] = []
-    const { doc } = editor.state
     const textContent = editor.getText()
     
     if (!textContent) return []
@@ -54,17 +53,18 @@ function FindBar({ editor, onClose }: FindBarProps) {
       return []
     }
 
-    let textPos = 0
     let match
     while ((match = searchRegex.exec(textContent)) !== null) {
       const matchStart = match.index
       const matchEnd = matchStart + match[0].length
       
-      const docPos = getDocPositionFromTextOffset(doc, matchStart, matchEnd)
-      if (docPos) {
+      const from = textOffsetToDocPos(matchStart)
+      const to = textOffsetToDocPos(matchEnd)
+      
+      if (from !== null && to !== null) {
         allMatches.push({
-          from: docPos.from,
-          to: docPos.to,
+          from,
+          to,
           text: match[0]
         })
       }
@@ -77,48 +77,28 @@ function FindBar({ editor, onClose }: FindBarProps) {
     return allMatches
   }, [editor, searchTerm, caseSensitive, wholeWord, regex])
 
-  const getDocPositionFromTextOffset = (doc: any, startOffset: number, endOffset: number): { from: number; to: number } | null => {
+  const textOffsetToDocPos = (textOffset: number): number | null => {
+    if (!editor) return null
+    const { doc } = editor.state
     let currentOffset = 0
-    let fromPos = 0
-    let toPos = 0
-    let foundStart = false
-    let foundEnd = false
-
+    let result: number | null = null
+    
     doc.descendants((node: any, pos: number) => {
-      if (node.isText && !foundEnd) {
+      if (result !== null) return false
+      
+      if (node.isText) {
         const nodeStart = currentOffset
         const nodeEnd = currentOffset + node.text.length
         
-        if (!foundStart && startOffset >= nodeStart && startOffset <= nodeEnd) {
-          fromPos = pos + (startOffset - nodeStart)
-          foundStart = true
-        }
-        
-        if (foundStart && !foundEnd && endOffset >= nodeStart && endOffset <= nodeEnd) {
-          toPos = pos + (endOffset - nodeStart)
-          foundEnd = true
-          return false
-        }
-        
-        if (!foundStart && endOffset <= nodeEnd) {
-          toPos = pos + (endOffset - nodeStart)
-          foundEnd = true
-          return false
+        if (textOffset >= nodeStart && textOffset <= nodeEnd) {
+          result = pos + (textOffset - nodeStart)
         }
         
         currentOffset = nodeEnd
       }
     })
-
-    if (foundStart && foundEnd) {
-      return { from: fromPos, to: toPos }
-    }
     
-    if (foundStart && !foundEnd) {
-      return { from: fromPos, to: doc.content.size }
-    }
-    
-    return null
+    return result
   }
 
   const clearHighlights = useCallback(() => {
@@ -179,16 +159,19 @@ function FindBar({ editor, onClose }: FindBarProps) {
     if (!editor) return
     try {
       const { view } = editor
-      const coords = view.coordsAtPos(pos)
-      const editorDom = view.dom
-      
-      const domElement = document.elementFromPoint(coords.left, coords.top)
-      if (domElement) {
-        domElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
       
       editor.commands.setTextSelection(pos)
-      editor.view.focus()
+      view.focus()
+      
+      setTimeout(() => {
+        const domInfo = view.domAtPos(pos)
+        if (domInfo.node) {
+          const domNode = domInfo.node.parentElement
+          if (domNode) {
+            domNode.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        }
+      }, 10)
     } catch (e) {
       console.error('Scroll error:', e)
     }
