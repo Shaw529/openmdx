@@ -181,14 +181,10 @@ function FindBar({ editor, onClose }: FindBarProps) {
       const { view } = editor
       const coords = view.coordsAtPos(pos)
       const editorDom = view.dom
-      const editorRect = editorDom.getBoundingClientRect()
       
-      if (coords.top < editorRect.top || coords.bottom > editorRect.bottom) {
-        const scrollTarget = coords.top - editorRect.top - editorDom.clientHeight / 2
-        editorDom.scrollTo({
-          top: Math.max(0, scrollTarget),
-          behavior: 'smooth'
-        })
+      const domElement = document.elementFromPoint(coords.left, coords.top)
+      if (domElement) {
+        domElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }
       
       editor.commands.setTextSelection(pos)

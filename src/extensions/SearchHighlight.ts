@@ -1,9 +1,5 @@
 import { Mark } from '@tiptap/core'
 
-/**
- * 搜索高亮标记扩展
- * 用于在查找替换功能中高亮显示匹配文本
- */
 export const SearchHighlight = Mark.create({
   name: 'searchHighlight',
   
@@ -17,13 +13,12 @@ export const SearchHighlight = Mark.create({
 
   parseHTML() {
     return [
-      {
-        tag: 'mark.search-highlight',
-      },
+      { tag: 'span.search-highlight' },
+      { tag: 'mark.search-highlight' },
     ]
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['mark', { class: `search-highlight ${HTMLAttributes.class || ''}`.trim() }, 0]
+    return ['span', { class: `search-highlight ${HTMLAttributes.class || ''}`.trim() }, 0]
   },
 })

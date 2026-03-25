@@ -36,15 +36,19 @@
 
 /* 搜索高亮样式 */
 mark.search-highlight,
-.search-highlight {
+span.search-highlight,
+.ProseMirror mark.search-highlight,
+.ProseMirror span.search-highlight {
   background-color: #fef08a !important;
   border-radius: 2px;
   padding: 0 1px;
 }
 
 .dark mark.search-highlight,
-.dark .search-highlight {
-  background-color: #854d0e !important;
+.dark span.search-highlight,
+.dark .ProseMirror mark.search-highlight,
+.dark .ProseMirror span.search-highlight {
+  background-color: #b45309 !important;
 }
 
 /* 编辑器样式 */
