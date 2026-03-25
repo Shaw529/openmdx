@@ -9,6 +9,7 @@ interface FindBarProps {
 interface Match {
   from: number
   to: number
+  text: string
 }
 
 function FindBar({ editor, onClose }: FindBarProps) {
@@ -27,15 +28,109 @@ function FindBar({ editor, onClose }: FindBarProps) {
     searchInputRef.current?.focus()
   }, [])
 
+  const getMatchesInDocument = useCallback((): Match[] => {
+    if (!editor || !searchTerm) return []
+    
+    const allMatches: Match[] = []
+    const { doc } = editor.state
+    const textContent = editor.getText()
+    
+    if (!textContent) return []
+
+    let flags = caseSensitive ? 'g' : 'gi'
+    let pattern = searchTerm
+    if (!regex) {
+      const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      pattern = escaped
+    }
+    if (wholeWord) {
+      pattern = '\\b' + pattern + '\\b'
+    }
+
+    let searchRegex: RegExp
+    try {
+      searchRegex = new RegExp(pattern, flags)
+    } catch {
+      return []
+    }
+
+    let textPos = 0
+    let match
+    while ((match = searchRegex.exec(textContent)) !== null) {
+      const matchStart = match.index
+      const matchEnd = matchStart + match[0].length
+      
+      const docPos = getDocPositionFromTextOffset(doc, matchStart, matchEnd)
+      if (docPos) {
+        allMatches.push({
+          from: docPos.from,
+          to: docPos.to,
+          text: match[0]
+        })
+      }
+      
+      if (match[0].length === 0) {
+        searchRegex.lastIndex++
+      }
+    }
+
+    return allMatches
+  }, [editor, searchTerm, caseSensitive, wholeWord, regex])
+
+  const getDocPositionFromTextOffset = (doc: any, startOffset: number, endOffset: number): { from: number; to: number } | null => {
+    let currentOffset = 0
+    let fromPos = 0
+    let toPos = 0
+    let foundStart = false
+    let foundEnd = false
+
+    doc.descendants((node: any, pos: number) => {
+      if (node.isText && !foundEnd) {
+        const nodeStart = currentOffset
+        const nodeEnd = currentOffset + node.text.length
+        
+        if (!foundStart && startOffset >= nodeStart && startOffset <= nodeEnd) {
+          fromPos = pos + (startOffset - nodeStart)
+          foundStart = true
+        }
+        
+        if (foundStart && !foundEnd && endOffset >= nodeStart && endOffset <= nodeEnd) {
+          toPos = pos + (endOffset - nodeStart)
+          foundEnd = true
+          return false
+        }
+        
+        if (!foundStart && endOffset <= nodeEnd) {
+          toPos = pos + (endOffset - nodeStart)
+          foundEnd = true
+          return false
+        }
+        
+        currentOffset = nodeEnd
+      }
+    })
+
+    if (foundStart && foundEnd) {
+      return { from: fromPos, to: toPos }
+    }
+    
+    if (foundStart && !foundEnd) {
+      return { from: fromPos, to: doc.content.size }
+    }
+    
+    return null
+  }
+
   const clearHighlights = useCallback(() => {
     if (!editor) return
     const { state, view } = editor
     if (!state || !view) return
-    const { doc } = state
+    
     const markType = state.schema.marks['searchHighlight']
     if (!markType) return
+    
     const tr = state.tr
-    doc.descendants((node: any, pos: number) => {
+    state.doc.descendants((node: any, pos: number) => {
       if (node.isText && node.marks) {
         node.marks.forEach((mark: any) => {
           if (mark.type.name === 'searchHighlight') {
@@ -44,95 +139,92 @@ function FindBar({ editor, onClose }: FindBarProps) {
         })
       }
     })
+    
     if (tr.steps.size > 0) {
       view.dispatch(tr)
     }
   }, [editor])
 
-  const highlightMatch = useCallback((match: Match) => {
+  const highlightAllMatches = useCallback((allMatches: Match[]) => {
     if (!editor) return
     const { state, view } = editor
     if (!state || !view) return
+    
     const markType = state.schema.marks['searchHighlight']
     if (!markType) return
 
-    const clearTr = state.tr
-    const { doc } = state
-    doc.descendants((node: any, pos: number) => {
+    const tr = state.tr
+
+    state.doc.descendants((node: any, pos: number) => {
       if (node.isText && node.marks) {
         node.marks.forEach((mark: any) => {
           if (mark.type.name === 'searchHighlight') {
-            clearTr.removeMark(pos, pos + node.nodeSize, markType)
+            tr.removeMark(pos, pos + node.nodeSize, markType)
           }
         })
       }
     })
-    view.dispatch(clearTr)
-
-    const tr = view.state.tr
-    tr.addMark(match.from, match.to, markType.create({ class: 'search-highlight' }))
     view.dispatch(tr)
+
+    if (allMatches.length === 0) return
+
+    const tr2 = view.state.tr
+    allMatches.forEach(match => {
+      tr2.addMark(match.from, match.to, markType.create({ class: 'search-highlight' }))
+    })
+    view.dispatch(tr2)
   }, [editor])
 
-  const scrollToMatch = useCallback((match: Match) => {
+  const scrollToPosition = useCallback((pos: number) => {
     if (!editor) return
     try {
-      const resolved = editor.state.doc.resolve(match.from)
-      const domPos = editor.view.coordsAtPos(resolved.pos)
-      const editorRect = editor.view.dom.getBoundingClientRect()
-      if (domPos.top < editorRect.top || domPos.bottom > editorRect.bottom) {
-        editor.view.dom.scrollTop = domPos.top - editorRect.top - editor.view.dom.clientHeight / 2
+      const { view } = editor
+      const coords = view.coordsAtPos(pos)
+      const editorDom = view.dom
+      const editorRect = editorDom.getBoundingClientRect()
+      
+      if (coords.top < editorRect.top || coords.bottom > editorRect.bottom) {
+        const scrollTarget = coords.top - editorRect.top - editorDom.clientHeight / 2
+        editorDom.scrollTo({
+          top: Math.max(0, scrollTarget),
+          behavior: 'smooth'
+        })
       }
-    } catch {
-      // ignore
+      
+      editor.commands.setTextSelection(pos)
+      editor.view.focus()
+    } catch (e) {
+      console.error('Scroll error:', e)
     }
   }, [editor])
 
   const goToMatch = useCallback((index: number) => {
-    if (matches.length === 0) return
+    if (matches.length === 0 || !editor) return
     const targetIndex = Math.max(0, Math.min(index, matches.length - 1))
     setCurrentIndex(targetIndex)
-    highlightMatch(matches[targetIndex])
-    scrollToMatch(matches[targetIndex])
-  }, [matches, highlightMatch, scrollToMatch])
+    
+    const match = matches[targetIndex]
+    highlightAllMatches(matches)
+    scrollToPosition(match.from)
+  }, [matches, editor, highlightAllMatches, scrollToPosition])
 
   useEffect(() => {
-    if (!editor || !searchTerm) {
+    if (!editor) return
+    
+    if (!searchTerm) {
       clearHighlights()
       setMatches([])
       setCurrentIndex(0)
       return
     }
 
-    const text = editor.getText()
-    const allMatches: Match[] = []
-
-    try {
-      let flags = 'g'
-      if (!caseSensitive) flags += 'i'
-      let pattern = searchTerm
-      if (!regex) {
-        const escaped = searchTerm.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
-        pattern = escaped
-      }
-      if (wholeWord) {
-        pattern = '\\b' + pattern + '\\b'
-      }
-      const re = new RegExp(pattern, flags)
-      let match
-      while ((match = re.exec(text)) !== null) {
-        allMatches.push({ from: match.index, to: match.index + match[0].length })
-      }
-    } catch {
-      // invalid regex
-    }
-
+    const allMatches = getMatchesInDocument()
     setMatches(allMatches)
     setCurrentIndex(0)
 
     if (allMatches.length > 0) {
-      highlightMatch(allMatches[0])
-      scrollToMatch(allMatches[0])
+      highlightAllMatches(allMatches)
+      scrollToPosition(allMatches[0].from)
     } else {
       clearHighlights()
     }
@@ -150,48 +242,42 @@ function FindBar({ editor, onClose }: FindBarProps) {
 
   const handleReplace = useCallback(() => {
     if (!editor || matches.length === 0 || currentIndex >= matches.length) return
+    
     const match = matches[currentIndex]
-    editor.chain().focus().deleteRange({ from: match.from, to: match.to }).insertContentAt(match.from, replaceTerm).run()
-    const newText = editor.getText()
-    const allMatches: Match[] = []
-    try {
-      let flags = 'g'
-      if (!caseSensitive) flags += 'i'
-      let pattern = searchTerm
-      if (!regex) {
-        const escaped = searchTerm.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
-        pattern = escaped
+    const { state, view } = editor
+
+    const tr = state.tr.deleteRange(match.from, match.to)
+    const newText = state.schema.text(replaceTerm)
+    tr.insert(match.from, newText)
+    view.dispatch(tr)
+
+    setTimeout(() => {
+      const newMatches = getMatchesInDocument()
+      setMatches(newMatches)
+      setCurrentIndex(Math.min(currentIndex, Math.max(0, newMatches.length - 1)))
+      
+      if (newMatches.length > 0) {
+        highlightAllMatches(newMatches)
+        scrollToPosition(newMatches[Math.min(currentIndex, newMatches.length - 1)].from)
+      } else {
+        clearHighlights()
       }
-      if (wholeWord) {
-        pattern = '\\b' + pattern + '\\b'
-      }
-      const re = new RegExp(pattern, flags)
-      let matchResult
-      while ((matchResult = re.exec(newText)) !== null) {
-        allMatches.push({ from: matchResult.index, to: matchResult.index + matchResult[0].length })
-      }
-    } catch {
-      // ignore
-    }
-    setMatches(allMatches)
-    setCurrentIndex(0)
-    if (allMatches.length > 0) {
-      highlightMatch(allMatches[0])
-    } else {
-      clearHighlights()
-    }
-  }, [editor, matches, currentIndex, replaceTerm, searchTerm, caseSensitive, wholeWord, regex, highlightMatch, clearHighlights])
+    }, 0)
+  }, [editor, matches, currentIndex, replaceTerm, getMatchesInDocument, highlightAllMatches, scrollToPosition, clearHighlights])
 
   const handleReplaceAll = useCallback(() => {
     if (!editor || matches.length === 0) return
-    let offset = 0
-    const sortedMatches = [...matches].sort((a, b) => a.from - b.from)
+    
+    const { state, view } = editor
+    const sortedMatches = [...matches].sort((a, b) => b.from - a.from)
+
     sortedMatches.forEach(match => {
-      const from = match.from + offset
-      const to = match.to + offset
-      editor.chain().focus().deleteRange({ from, to }).insertContentAt(from, replaceTerm).run()
-      offset += replaceTerm.length - (match.to - match.from)
+      const tr = state.tr.deleteRange(match.from, match.to)
+      const newText = state.schema.text(replaceTerm)
+      tr.insert(match.from, newText)
+      view.dispatch(tr)
     })
+
     clearHighlights()
     setMatches([])
     setCurrentIndex(0)
@@ -205,7 +291,11 @@ function FindBar({ editor, onClose }: FindBarProps) {
     }
   }, [clearHighlights, onClose])
 
-  const matchCountText = matches.length === 0 && searchTerm ? t.findBar.noResults : matches.length > 0 ? `${currentIndex + 1}/${matches.length}` : '0/0'
+  const matchCountText = matches.length === 0 && searchTerm 
+    ? t.findBar.noResults 
+    : matches.length > 0 
+      ? `${currentIndex + 1}/${matches.length}` 
+      : '0/0'
 
   return (
     <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm select-none" onKeyDown={handleKeyDown}>
@@ -289,4 +379,4 @@ function FindBar({ editor, onClose }: FindBarProps) {
   )
 }
 
-export default memo(FindBar) 
+export default memo(FindBar)

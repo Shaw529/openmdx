@@ -21,6 +21,7 @@ import HeadingWithId from '../extensions/HeadingWithId'
 import HeadingIdPlugin from '../extensions/HeadingIdPlugin'
 import { MermaidBlock } from '../extensions/MermaidBlock'
 import { GoToLineExtension } from '../extensions/GoToLineExtension'
+import { SearchHighlight } from '../extensions/SearchHighlight'
 import { hasMermaidBlocks, convertMarkdownToTipTapNodes } from '../utils/markdownToTipTap'
 
 const lowlight = createLowlight(all)
@@ -94,9 +95,10 @@ const Editor = forwardRef<EditorRef, EditorProps>(({ content, onChange, onReady 
           class: 'bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4',
         },
       }),
-      MermaidBlock, // Mermaid 图表支持
-      HeadingIdPlugin, // 自动为标题分配 ID 的插件
-      GoToLineExtension, // 转到行支持
+      MermaidBlock,
+      HeadingIdPlugin,
+      GoToLineExtension,
+      SearchHighlight,
     ],
     content,
     onUpdate: ({ editor }) => {
