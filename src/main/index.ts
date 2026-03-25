@@ -157,135 +157,42 @@ ipcMain.handle('export-pdf', async (event) => {
           return '';
         }
 
-        console.log('[PDF Export] Editor found, getting content...');
-        // 获取编辑器内容
         const content = editor.innerHTML;
+        const styles = \`
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.8; color: #333; padding: 2rem; max-width: 210mm; margin: 0 auto; background: #ffffff; }
+          h1 { font-size: 2em; font-weight: 700; margin: 1em 0 0.5em; line-height: 1.3; page-break-after: avoid; }
+          h2 { font-size: 1.5em; font-weight: 600; margin: 1em 0 0.5em; line-height: 1.3; page-break-after: avoid; }
+          h3 { font-size: 1.25em; font-weight: 600; margin: 1em 0 0.5em; line-height: 1.3; page-break-after: avoid; }
+          h4, h5, h6 { font-size: 1em; font-weight: 600; margin: 1em 0 0.5em; page-break-after: avoid; }
+          p { margin: 0.5em 0; orphans: 3; widows: 3; }
+          ul, ol { padding-left: 1.5em; margin: 0.5em 0; }
+          ul { list-style-type: disc; }
+          ol { list-style-type: decimal; }
+          li { margin: 0.25em 0; }
+          blockquote { border-left: 4px solid #4880bd; padding-left: 1em; margin: 1em 0; color: #666; font-style: italic; page-break-inside: avoid; }
+          code { background: #f4f4f4; padding: 0.2em 0.4em; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+          pre { background: #f4f4f4; padding: 1em; border-radius: 4px; overflow-x: auto; margin: 1em 0; page-break-inside: avoid; }
+          pre code { background: none; padding: 0; }
+          a { color: #4880bd; text-decoration: underline; }
+          img { max-width: 100%; height: auto; border-radius: 4px; margin: 1em 0; page-break-inside: avoid; }
+          hr { border: none; border-top: 2px solid #e0e0e0; margin: 2em 0; }
+          table { border-collapse: collapse; width: 100%; margin: 1em 0; page-break-inside: avoid; }
+          td, th { border: 1px solid #ddd; padding: 0.5em; min-width: 1em; }
+          th { background: #f7f7f7; font-weight: 600; text-align: left; }
+          @media print { body { padding: 0; } h1, h2, h3, h4, h5, h6 { page-break-after: avoid; } img, table, pre, blockquote { page-break-inside: avoid; } }
+        \`;
 
-        console.log('[PDF Export] Content length:', content.length);
-
-        // 返回格式化的 HTML（与编辑器 index.css 完全一致）
-        return \`
-<!DOCTYPE html>
+        return \`<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-      font-size: 16px;
-      line-height: 1.8;
-      color: #333;
-      padding: 2rem;
-      max-width: 210mm;
-      margin: 0 auto;
-      background: #ffffff;
-    }
-    h1 {
-      font-size: 2em;
-      font-weight: 700;
-      margin: 1em 0 0.5em;
-      line-height: 1.3;
-      page-break-after: avoid;
-    }
-    h2 {
-      font-size: 1.5em;
-      font-weight: 600;
-      margin: 1em 0 0.5em;
-      line-height: 1.3;
-      page-break-after: avoid;
-    }
-    h3 {
-      font-size: 1.25em;
-      font-weight: 600;
-      margin: 1em 0 0.5em;
-      line-height: 1.3;
-      page-break-after: avoid;
-    }
-    h4, h5, h6 {
-      font-size: 1em;
-      font-weight: 600;
-      margin: 1em 0 0.5em;
-      page-break-after: avoid;
-    }
-    p { margin: 0.5em 0; orphans: 3; widows: 3; }
-    ul, ol {
-      padding-left: 1.5em;
-      margin: 0.5em 0;
-    }
-    ul { list-style-type: disc; }
-    ol { list-style-type: decimal; }
-    blockquote {
-      border-left: 4px solid #4880bd;
-      padding-left: 1em;
-      margin: 1em 0;
-      color: #666;
-      font-style: italic;
-      page-break-inside: avoid;
-    }
-    code {
-      background: #f4f4f4;
-      padding: 0.2em 0.4em;
-      border-radius: 3px;
-      font-family: 'Consolas', 'Monaco', monospace;
-      font-size: 0.9em;
-    }
-    pre {
-      background: #f4f4f4;
-      padding: 1em;
-      border-radius: 4px;
-      overflow-x: auto;
-      margin: 1em 0;
-      page-break-inside: avoid;
-    }
-    pre code {
-      background: none;
-      padding: 0;
-    }
-    a {
-      color: #4880bd;
-      text-decoration: underline;
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 4px;
-      margin: 1em 0;
-      page-break-inside: avoid;
-    }
-    hr {
-      border: none;
-      border-top: 2px solid #e0e0e0;
-      margin: 2em 0;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 1em 0;
-      page-break-inside: avoid;
-    }
-    td, th {
-      border: 1px solid #ddd;
-      padding: 0.5em;
-      min-width: 1em;
-    }
-    th {
-      background: #f7f7f7;
-      font-weight: 600;
-      text-align: left;
-    }
-    @media print {
-      body { padding: 0; }
-      h1, h2, h3, h4, h5, h6 { page-break-after: avoid; }
-      img, table, pre, blockquote { page-break-inside: avoid; }
-    }
-  </style>
+  <style>\${styles}</style>
 </head>
 <body>
 \${content}
 </body>
-</html>
-        \`;
+</html>\`;
       })()
     `)
 
@@ -303,15 +210,16 @@ ipcMain.handle('export-pdf', async (event) => {
     await fs.writeFile(tempHtmlPath, htmlContent, 'utf-8')
     console.log('[PDF Export] Temp file created successfully')
 
-    // 创建打印窗口
+    // 创建打印窗口 - 使用安全配置，不暴露 Node API
     console.log('[PDF Export] Creating print window...')
     printWindow = new BrowserWindow({
       width: 800,
       height: 1200,
       show: false,
       webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
+        nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: true,
       }
     })
 
@@ -394,32 +302,137 @@ ipcMain.handle('export-pdf', async (event) => {
   }
 })
 
-ipcMain.handle('export-word', async (_event, filePath: string, content: string, pandocPath: string) => {
+ipcMain.handle('export-word', async (_event, filePath: string, content: string, pandocPath: string, wordExportFont: string) => {
   try {
-    // 创建临时HTML文件（TipTap编辑器输出的是HTML格式）
     const tempDir = path.dirname(filePath)
     const tempHtmlPath = path.join(tempDir, 'temp_export.html')
 
-    // 构建完整的HTML文档
     const fullHtml = `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <style>
-    body { font-family: 'SimSun', '宋体', serif; line-height: 1.8; color: #000000; }
-    h1, h2, h3, h4, h5, h6 { margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 600; color: #000000; }
-    p { margin: 0.5em 0; color: #000000; }
-    ul, ol { margin: 0.5em 0; padding-left: 2em; }
-    li { margin: 0.25em 0; color: #000000; }
-    blockquote { border-left: 4px solid #4880bd; padding-left: 1em; margin: 1em 0; color: #000000; }
-    pre { background: #f4f4f4; padding: 1rem; border-radius: 4px; overflow-x: auto; }
-    code { background: #f4f4f4; padding: 0.2em 0.4em; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; }
-    pre code { background: none; padding: 0; }
-    a { color: #4880bd; text-decoration: underline; }
-    table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-    th, td { border: 1px solid #ddd; padding: 0.5em; }
-    th { background: #f4f4f4; font-weight: 600; }
-    hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
+    body {
+      font-family: ${wordExportFont};
+      font-size: 12pt;
+      line-height: 1.8;
+      color: #000000;
+      margin: 2.54cm;
+      text-align: justify;
+    }
+    h1 {
+      font-size: 22pt;
+      font-weight: bold;
+      margin-top: 24pt;
+      margin-bottom: 12pt;
+      page-break-after: avoid;
+      color: #000000;
+      border-bottom: 1pt solid #000000;
+      padding-bottom: 6pt;
+    }
+    h2 {
+      font-size: 16pt;
+      font-weight: bold;
+      margin-top: 18pt;
+      margin-bottom: 9pt;
+      page-break-after: avoid;
+      color: #000000;
+    }
+    h3 {
+      font-size: 14pt;
+      font-weight: bold;
+      margin-top: 14pt;
+      margin-bottom: 7pt;
+      page-break-after: avoid;
+      color: #000000;
+    }
+    h4, h5, h6 {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-top: 12pt;
+      margin-bottom: 6pt;
+      color: #000000;
+    }
+    p {
+      margin-top: 6pt;
+      margin-bottom: 6pt;
+      color: #000000;
+      text-indent: 2em;
+    }
+    ul, ol {
+      margin-top: 6pt;
+      margin-bottom: 6pt;
+      padding-left: 2em;
+    }
+    li {
+      margin-top: 3pt;
+      margin-bottom: 3pt;
+      color: #000000;
+    }
+    blockquote {
+      border-left: 3pt solid #4880bd;
+      padding-left: 1em;
+      margin: 12pt 0;
+      color: #333333;
+      font-style: italic;
+      background: #f9f9f9;
+      padding: 8pt 12pt;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 12pt;
+      margin: 12pt 0;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 10pt;
+      border: 1pt solid #ddd;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    code {
+      background: #f5f5f5;
+      padding: 1pt 4pt;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 10pt;
+      border: 0.5pt solid #ddd;
+    }
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    a {
+      color: #0563C1;
+      text-decoration: underline;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12pt 0;
+    }
+    th, td {
+      border: 0.75pt solid #666666;
+      padding: 6pt 8pt;
+      text-align: left;
+    }
+    th {
+      background: #e8e8e8;
+      font-weight: bold;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    hr {
+      border: none;
+      border-top: 0.75pt solid #999999;
+      margin: 18pt 0;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      margin: 12pt 0;
+    }
+    strong { font-weight: bold; }
+    em { font-style: italic; }
   </style>
 </head>
 <body>
@@ -429,22 +442,28 @@ ${content}
 
     await fs.writeFile(tempHtmlPath, fullHtml, 'utf-8')
 
-    // 使用pandoc从HTML转换为Word
-    await execFileAsync(pandocPath, [
+    const pandocArgs: string[] = [
       tempHtmlPath,
       '-o', filePath,
       '--from', 'html',
       '--to', 'docx',
-      '--standalone',  // 包含完整的文档结构
-      '--highlight-style', 'pygments'  // 代码高亮样式
-    ])
+      '--standalone',
+      '--highlight-style', 'pygments',
+    ]
 
-    // 删除临时文件
+    const refDocPath = app.isPackaged
+      ? path.join(process.resourcesPath, 'reference.docx')
+      : path.join(__dirname, '..', '..', 'resources', 'reference.docx')
+    if (await fs.access(refDocPath).then(() => true).catch(() => false)) {
+      pandocArgs.push('--reference-doc', refDocPath)
+    }
+
+    await execFileAsync(pandocPath, pandocArgs)
+
     await fs.unlink(tempHtmlPath)
 
     return { success: true, filePath }
   } catch (error) {
-    // 清理临时文件（如果存在）
     try {
       const tempDir = path.dirname(filePath)
       const tempHtmlPath = path.join(tempDir, 'temp_export.html')

@@ -1,7 +1,7 @@
 {
   "name": "openmdtx",
   "private": true,
-  "version": "1.3.0",
+  "version": "1.4.0",
   "type": "module",
   "description": "A powerful Markdown editor with multi-language support and export features",
   "author": "xiaoq16",
@@ -9,11 +9,14 @@
   "main": "dist-electron/main/index.js",
   "scripts": {
     "dev": "vite",
+    "dev:full": "concurrently -k \"npm run dev\" \"npm run electron:watch\"",
+    "electron:watch": "node scripts/wait-and-start.js",
     "build": "npm run build:renderer && npm run build:electron",
     "build:renderer": "vite build",
     "build:electron": "electron-builder",
     "preview": "vite preview",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
@@ -57,7 +60,7 @@
     "autoprefixer": "^10.4.24",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
-    "electron": "^40.1.0",
+    "electron": "^43.0.0",
     "electron-builder": "^26.4.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
@@ -67,7 +70,7 @@
     "tailwindcss": "^3.4.19",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4",
+    "vite": "^6.2.0",
     "vite-plugin-electron": "^0.29.0",
     "vite-plugin-electron-renderer": "^0.14.6"
   },
@@ -90,7 +93,24 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*",
+      "resources/**/*",
       "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/",
+        "to": "dist",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "resources/",
+        "to": "resources",
+        "filter": [
+          "**/*"
+        ]
+      }
     ],
     "extraResources": [
       {

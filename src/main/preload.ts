@@ -19,8 +19,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   exportPDF: () =>
     ipcRenderer.invoke('export-pdf'),
 
-  exportWord: (filePath: string, content: string, pandocPath: string) =>
-    ipcRenderer.invoke('export-word', filePath, content, pandocPath),
+  exportWord: (filePath: string, content: string, pandocPath: string, wordExportFont: string) =>
+    ipcRenderer.invoke('export-word', filePath, content, pandocPath, wordExportFont),
 
   findPandoc: () =>
     ipcRenderer.invoke('find-pandoc'),

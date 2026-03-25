@@ -5,7 +5,7 @@ export interface ElectronAPI {
   showWordSaveDialog: (defaultName: string) => Promise<{ canceled: boolean; filePath?: string }>
   showOpenDialog: () => Promise<{ canceled: boolean; filePaths?: string[] }>
   exportPDF: () => Promise<{ success: boolean; canceled?: boolean; filePath?: string; error?: string }>
-  exportWord: (filePath: string, content: string, pandocPath: string) => Promise<{ success: boolean; filePath?: string; error?: string }>
+  exportWord: (filePath: string, content: string, pandocPath: string, wordExportFont: string) => Promise<{ success: boolean; filePath?: string; error?: string }>
   onMenuAction: (callback: (action: string) => void) => void
 }
 

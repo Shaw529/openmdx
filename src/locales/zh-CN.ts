@@ -1,7 +1,7 @@
 export default {
   app: {
     title: 'OpenMDtx',
-    version: 'v1.2.0'
+    version: 'v1.4.0'
   },
   menu: {
     file: '文件',
@@ -43,7 +43,14 @@ export default {
     image: '图片',
     table: '表格',
     toggleSidebar: '切换侧边栏',
-    about: '关于'
+    about: '关于',
+    find: '查找',
+    findNext: '查找下一个',
+    findPrevious: '查找上一个',
+    replace: '替换',
+    replaceOne: '替换',
+    replaceAll: '替换全部',
+    goToLine: '转到行'
   },
   toolbar: {
     new: '新建',
@@ -98,7 +105,9 @@ export default {
     pandocNotFound: '未找到 Pandoc，请手动安装',
     pandocSearchError: '搜索失败，请在 Electron 环境中使用',
     save: '保存设置',
-    cancel: '取消'
+    cancel: '取消',
+    wordExportFont: 'Word 导出字体',
+    wordExportFontHint: '选择导出 Word 文档时使用的字体'
   },
   dialog: {
     unsavedChanges: '当前文件未保存，是否继续？',
@@ -163,5 +172,24 @@ export default {
     },
     renderError: '图表渲染失败',
     invalidSyntax: '语法错误'
+  },
+  findBar: {
+    placeholder: '查找',
+    replacePlaceholder: '替换',
+    matchCount: '无匹配',
+    noResults: '无匹配',
+    results: '{count} 个匹配',
+    close: '关闭',
+    previous: '上一个',
+    next: '下一个',
+    replaceBtn: '替换',
+    replaceAllBtn: '全部替换',
+    caseSensitive: '区分大小写',
+    regex: '正则表达式',
+    wholeWord: '全词匹配',
+    goToLineTitle: '转到行',
+    lineNumber: '行号 (1-{total})',
+    goTo: '转到',
+    cancel: '取消'
   }
 }

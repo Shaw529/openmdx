@@ -9,7 +9,7 @@ interface UseExportParams {
   currentFile: string | null
   language: string
   resolvedTheme: string
-  settings: { pandocPath: string }
+  settings: { pandocPath: string; wordExportFont: string }
 }
 
 /**
@@ -45,118 +45,7 @@ function generateHTMLDocument(content: string, title: string, isPrint: boolean =
   const normalizedContent = normalizeTipTapHTML(content)
   const isDark = theme === 'dark'
 
-  // 使用与编辑器 index.css 完全相同的样式
-  const styles = isPrint ? `
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-      font-size: 16px;
-      line-height: 1.8;
-      color: #333;
-      padding: 2rem;
-      max-width: 210mm;
-      margin: 0 auto;
-      background: #ffffff;
-    }
-    h1 {
-      font-size: 2em;
-      font-weight: 700;
-      margin: 1em 0 0.5em;
-      line-height: 1.3;
-      page-break-after: avoid;
-    }
-    h2 {
-      font-size: 1.5em;
-      font-weight: 600;
-      margin: 1em 0 0.5em;
-      line-height: 1.3;
-      page-break-after: avoid;
-    }
-    h3 {
-      font-size: 1.25em;
-      font-weight: 600;
-      margin: 1em 0 0.5em;
-      line-height: 1.3;
-      page-break-after: avoid;
-    }
-    h4, h5, h6 {
-      font-size: 1em;
-      font-weight: 600;
-      margin: 1em 0 0.5em;
-      page-break-after: avoid;
-    }
-    p { margin: 0.5em 0; orphans: 3; widows: 3; }
-    ul, ol {
-      padding-left: 1.5em;
-      margin: 0.5em 0;
-    }
-    ul { list-style-type: disc; }
-    ol { list-style-type: decimal; }
-    blockquote {
-      border-left: 4px solid #4880bd;
-      padding-left: 1em;
-      margin: 1em 0;
-      color: #666;
-      font-style: italic;
-      page-break-inside: avoid;
-    }
-    code {
-      background: #f4f4f4;
-      padding: 0.2em 0.4em;
-      border-radius: 3px;
-      font-family: 'Consolas', 'Monaco', monospace;
-      font-size: 0.9em;
-    }
-    pre {
-      background: #f4f4f4;
-      padding: 1em;
-      border-radius: 4px;
-      overflow-x: auto;
-      margin: 1em 0;
-      page-break-inside: avoid;
-    }
-    pre code {
-      background: none;
-      padding: 0;
-    }
-    a {
-      color: #4880bd;
-      text-decoration: underline;
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 4px;
-      margin: 1em 0;
-      page-break-inside: avoid;
-    }
-    hr {
-      border: none;
-      border-top: 2px solid #e0e0e0;
-      margin: 2em 0;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 1em 0;
-      page-break-inside: avoid;
-    }
-    td, th {
-      border: 1px solid #ddd;
-      padding: 0.5em;
-      min-width: 1em;
-    }
-    th {
-      background: #f7f7f7;
-      font-weight: 600;
-      text-align: left;
-    }
-    @media print {
-      body { padding: 0; }
-      h1, h2, h3, h4, h5, h6 { page-break-after: avoid; }
-      img, table, pre, blockquote { page-break-inside: avoid; }
-    }
-  ` : `
+  const baseStyles = `
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -165,106 +54,32 @@ function generateHTMLDocument(content: string, title: string, isPrint: boolean =
       color: ${isDark ? '#e0e0e0' : '#333'};
       background: ${isDark ? '#1f2937' : '#ffffff'};
       padding: 2rem;
-      max-width: 100%;
-      min-height: 100vh;
+      max-width: ${isPrint ? '210mm' : '100%'};
+      margin: 0 auto;
+      min-height: ${isPrint ? 'auto' : '100vh'};
     }
-    h1 {
-      font-size: 2em;
-      font-weight: 700;
-      margin: 1em 0 0.5em;
-      line-height: 1.3;
-      color: ${isDark ? '#e0e0e0' : '#333'};
-    }
-    h2 {
-      font-size: 1.5em;
-      font-weight: 600;
-      margin: 1em 0 0.5em;
-      line-height: 1.3;
-      color: ${isDark ? '#e0e0e0' : '#333'};
-    }
-    h3 {
-      font-size: 1.25em;
-      font-weight: 600;
-      margin: 1em 0 0.5em;
-      line-height: 1.3;
-      color: ${isDark ? '#e0e0e0' : '#333'};
-    }
-    h4, h5, h6 {
-      font-size: 1em;
-      font-weight: 600;
-      margin: 1em 0 0.5em;
-      color: ${isDark ? '#e0e0e0' : '#333'};
-    }
-    p { margin: 0.5em 0; }
-    ul, ol {
-      padding-left: 1.5em;
-      margin: 0.5em 0;
-    }
+    h1 { font-size: 2em; font-weight: 700; margin: 1em 0 0.5em; line-height: 1.3; color: ${isDark ? '#e0e0e0' : '#333'}; ${isPrint ? 'page-break-after: avoid;' : ''} }
+    h2 { font-size: 1.5em; font-weight: 600; margin: 1em 0 0.5em; line-height: 1.3; color: ${isDark ? '#e0e0e0' : '#333'}; ${isPrint ? 'page-break-after: avoid;' : ''} }
+    h3 { font-size: 1.25em; font-weight: 600; margin: 1em 0 0.5em; line-height: 1.3; color: ${isDark ? '#e0e0e0' : '#333'}; ${isPrint ? 'page-break-after: avoid;' : ''} }
+    h4, h5, h6 { font-size: 1em; font-weight: 600; margin: 1em 0 0.5em; color: ${isDark ? '#e0e0e0' : '#333'}; ${isPrint ? 'page-break-after: avoid;' : ''} }
+    p { margin: 0.5em 0; ${isPrint ? 'orphans: 3; widows: 3;' : ''} }
+    ul, ol { padding-left: 1.5em; margin: 0.5em 0; }
     ul { list-style-type: disc; }
     ol { list-style-type: decimal; }
-    blockquote {
-      border-left: 4px solid #4880bd;
-      padding-left: 1em;
-      margin: 1em 0;
-      color: ${isDark ? '#aaa' : '#666'};
-      font-style: italic;
-    }
-    code {
-      background: ${isDark ? '#3a3a3a' : '#f4f4f4'};
-      padding: 0.2em 0.4em;
-      border-radius: 3px;
-      font-family: 'Consolas', 'Monaco', monospace;
-      font-size: 0.9em;
-    }
-    pre {
-      background: ${isDark ? '#2a2a2a' : '#f4f4f4'};
-      padding: 1em;
-      border-radius: 4px;
-      overflow-x: auto;
-      margin: 1em 0;
-    }
-    pre code {
-      background: none;
-      padding: 0;
-    }
-    a {
-      color: #4880bd;
-      text-decoration: underline;
-    }
-    a:hover {
-      color: #336699;
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 4px;
-      margin: 1em 0;
-    }
-    hr {
-      border: none;
-      border-top: 2px solid ${isDark ? '#444' : '#e0e0e0'};
-      margin: 2em 0;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin: 1em 0;
-      overflow: hidden;
-      border-radius: 4px;
-    }
-    td, th {
-      border: 1px solid ${isDark ? '#555' : '#ddd'};
-      padding: 0.5em;
-      min-width: 1em;
-    }
-    th {
-      background: ${isDark ? '#3a3a3a' : '#f7f7f7'};
-      font-weight: 600;
-      text-align: left;
-    }
-    tr:hover {
-      background: ${isDark ? '#374151' : '#f9fafb'};
-    }
+    li { margin: 0.25em 0; }
+    blockquote { border-left: 4px solid #4880bd; padding-left: 1em; margin: 1em 0; color: ${isDark ? '#aaa' : '#666'}; font-style: italic; ${isPrint ? 'page-break-inside: avoid;' : ''} }
+    code { background: ${isDark ? '#3a3a3a' : '#f4f4f4'}; padding: 0.2em 0.4em; border-radius: 3px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.9em; }
+    pre { background: ${isDark ? '#2a2a2a' : '#f4f4f4'}; padding: 1em; border-radius: 4px; overflow-x: auto; margin: 1em 0; ${isPrint ? 'page-break-inside: avoid;' : ''} }
+    pre code { background: none; padding: 0; }
+    a { color: #4880bd; text-decoration: underline; }
+    a:hover { color: #336699; }
+    img { max-width: 100%; height: auto; border-radius: 4px; margin: 1em 0; ${isPrint ? 'page-break-inside: avoid;' : ''} }
+    hr { border: none; border-top: 2px solid ${isDark ? '#444' : '#e0e0e0'}; margin: 2em 0; }
+    table { border-collapse: collapse; width: 100%; margin: 1em 0; ${isPrint ? 'page-break-inside: avoid;' : ''} overflow: hidden; border-radius: 4px; }
+    td, th { border: 1px solid ${isDark ? '#555' : '#ddd'}; padding: 0.5em; min-width: 1em; }
+    th { background: ${isDark ? '#3a3a3a' : '#f7f7f7'}; font-weight: 600; text-align: left; }
+    tr:hover { background: ${isDark ? '#374151' : '#f9fafb'}; }
+    ${isPrint ? '@media print { body { padding: 0; } h1, h2, h3, h4, h5, h6 { page-break-after: avoid; } img, table, pre, blockquote { page-break-inside: avoid; } }' : ''}
   `
 
   return `<!DOCTYPE html>
@@ -273,7 +88,7 @@ function generateHTMLDocument(content: string, title: string, isPrint: boolean =
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
-  <style>${styles}</style>
+  <style>${baseStyles}</style>
 </head>
 <body>
 ${normalizedContent}
@@ -388,7 +203,8 @@ export function useExport({
         const exportResult = await window.electronAPI!.exportWord(
           result.filePath,
           htmlDocument,
-          settings.pandocPath
+          settings.pandocPath,
+          settings.wordExportFont
         )
         if (exportResult.success) {
           alert(t.dialog.exportSuccess + ': ' + exportResult.filePath)
@@ -397,7 +213,7 @@ export function useExport({
         }
       }
     },
-    [content, currentFile, settings.pandocPath, language, t.dialog.pandocRequired, t.dialog.exportSuccess, t.dialog.exportFailed]
+    [content, currentFile, settings.pandocPath, settings.wordExportFont, language, t.dialog.pandocRequired, t.dialog.exportSuccess, t.dialog.exportFailed]
   )
 
   return {

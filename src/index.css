@@ -34,6 +34,19 @@
   background: #777;
 }
 
+/* 搜索高亮样式 */
+mark.search-highlight,
+.search-highlight {
+  background-color: #fef08a !important;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.dark mark.search-highlight,
+.dark .search-highlight {
+  background-color: #854d0e !important;
+}
+
 /* 编辑器样式 */
 .ProseMirror {
   outline: none;
@@ -536,5 +549,123 @@
 /* 设置对话框层级更高 */
 .settings-modal {
   z-index: 100;
+}
+
+/* ========== Mermaid 图表样式增强 ========== */
+
+/* Mermaid 节点容器 */
+.mermaid-block-node {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease;
+}
+
+.dark .mermaid-block-node {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.mermaid-block-node:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.dark .mermaid-block-node:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Mermaid 图表容器 */
+.mermaid-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Mermaid SVG 样式优化 */
+.mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 为 Mermaid 图表添加微妙的动画 */
+.mermaid-diagram svg * {
+  transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+/* 流程图节点样式增强 */
+.mermaid-diagram .node rect,
+.mermaid-diagram .node circle,
+.mermaid-diagram .node ellipse,
+.mermaid-diagram .node polygon,
+.mermaid-diagram .node path {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.dark .mermaid-diagram .node rect,
+.dark .mermaid-diagram .node circle,
+.dark .mermaid-diagram .node ellipse,
+.dark .mermaid-diagram .node polygon,
+.dark .mermaid-diagram .node path {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* 连接线样式 */
+.mermaid-diagram .edgePath .path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 思维导图样式优化 */
+.mermaid-diagram .mindmap-node {
+  font-weight: 500;
+}
+
+/* 时间线样式优化 */
+.mermaid-diagram .timeline {
+  font-size: 0.9em;
+}
+
+/* 代码编辑器样式优化 */
+.mermaid-code-editor textarea {
+  font-feature-settings: 'liga' 0, 'calt' 0;
+}
+
+/* 自定义滚动条（Mermaid 专用） */
+.mermaid-diagram::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.mermaid-diagram::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mermaid-diagram::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.dark .mermaid-diagram::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.mermaid-diagram::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.dark .mermaid-diagram::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 主题选择器样式优化 */
+.mermaid-theme-selector {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* 为主题色块添加微妙的渐变效果 */
+.mermaid-theme-preview-color {
+  transition: transform 0.2s ease;
+}
+
+.mermaid-theme-preview-color:hover {
+  transform: scale(1.1);
 }
 

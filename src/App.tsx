@@ -2,6 +2,8 @@ import { useState, useCallback, useRef, memo, useEffect } from 'react'
 import Editor from './components/Editor'
 import Sidebar from './components/Sidebar'
 import TabBar from './components/TabBar'
+import FindBar from './components/FindBar'
+import GoToLineModal from './components/GoToLineModal'
 
 // Editor引用类型（与Editor.tsx中的EditorRef保持一致）
 interface EditorRef {
@@ -13,6 +15,7 @@ import SettingsModal from './components/SettingsModal'
 import AboutModal from './components/AboutModal'
 import MenuBar from './components/MenuBar'
 import StatusBar from './components/StatusBar'
+import ErrorBoundary from './components/ErrorBoundary'
 import { useLanguage } from './contexts/LanguageContext'
 import { useTheme } from './contexts/ThemeContext'
 import { useSettings } from './contexts/SettingsContext'
@@ -32,6 +35,8 @@ function App() {
   // 状态管理
   const [showSettings, setShowSettings] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
+  const [showFindBar, setShowFindBar] = useState(false)
+  const [showGoToLine, setShowGoToLine] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [charCount, setCharCount] = useState(0)
   const [lineCount, setLineCount] = useState(0)
@@ -117,78 +122,145 @@ function App() {
         e.preventDefault()
         handleOpenFile()
       }
+      // Ctrl+F 或 Cmd+F 查找
+      else if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault()
+        setShowFindBar(true)
+      }
+      // Ctrl+H 或 Cmd+H 替换
+      else if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+        e.preventDefault()
+        setShowFindBar(true)
+      }
+      // Ctrl+G 或 Cmd+G 转到行
+      else if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
+        e.preventDefault()
+        setShowGoToLine(true)
+      }
+      // F3 查找下一个
+      else if (e.key === 'F3' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault()
+        const editor = editorRef.current?.getEditor()
+        if (editor?.commands?.findNext) {
+          editor.commands.findNext()
+        }
+      }
+      // Shift+F3 查找上一个
+      else if (e.key === 'F3' && e.shiftKey) {
+        e.preventDefault()
+        const editor = editorRef.current?.getEditor()
+        if (editor?.commands?.findPrevious) {
+          editor.commands.findPrevious()
+        }
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleSaveFile, handleNewFile, handleOpenFile])
 
+  // 自动保存
+  useEffect(() => {
+    if (!settings.autoSave || !activeTab?.path || !activeTab?.isModified) {
+      return
+    }
+
+    const autoSaveTimer = setInterval(() => {
+      if (activeTab?.isModified && activeTab?.path) {
+        handleSaveFile()
+      }
+    }, settings.autoSaveInterval)
+
+    return () => clearInterval(autoSaveTimer)
+  }, [settings.autoSave, settings.autoSaveInterval, activeTab?.path, activeTab?.isModified, handleSaveFile])
+
   return (
-    <div className="h-screen flex flex-col bg-white dark:bg-gray-900">
-      {/* 1. 经典菜单栏 - 32px高 */}
-      <MenuBar
-        editor={editorRef.current?.getEditor()}
-        currentFile={activeTab?.path || null}
-        isModified={activeTab?.isModified || false}
-        onNewFile={handleNewFile}
-        onOpenFile={handleOpenFile}
-        onSaveFile={handleSaveFile}
-        onExportPDF={handleExportPDF}
-        onExportHTML={handleExportHTML}
-        onExportWord={handleExportWord}
-        onOpenSettings={() => setShowSettings(true)}
-        onToggleSidebar={handleToggleSidebar}
-        onShowAbout={() => setShowAbout(true)}
-      />
-
-      {/* 2. 多文件页签 */}
-      <TabBar
-        tabs={tabs}
-        activeTabId={activeTabId}
-        onTabClick={handleTabClick}
-        onTabClose={handleCloseTab}
-      />
-
-      {/* 3. 主内容区域 */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* 侧边栏 - 0或16rem宽 */}
-        <Sidebar
-          content={activeTab?.content || ''}
-          onHeadingClick={handleHeadingClick}
-          isOpen={sidebarOpen}
-          onToggle={handleToggleSidebar}
+    <ErrorBoundary>
+      <div className="h-screen flex flex-col bg-white dark:bg-gray-900">
+        {/* 1. 经典菜单栏 - 32px高 */}
+        <MenuBar
+          editor={editorRef.current?.getEditor()}
+          currentFile={activeTab?.path || null}
+          isModified={activeTab?.isModified || false}
+          onNewFile={handleNewFile}
+          onOpenFile={handleOpenFile}
+          onSaveFile={handleSaveFile}
+          onExportPDF={handleExportPDF}
+          onExportHTML={handleExportHTML}
+          onExportWord={handleExportWord}
+          onOpenSettings={() => setShowSettings(true)}
+          onToggleSidebar={handleToggleSidebar}
+          onShowAbout={() => setShowAbout(true)}
+          onFind={() => setShowFindBar(true)}
+          onReplace={() => setShowFindBar(true)}
+          onGoToLine={() => setShowGoToLine(true)}
         />
 
-        {/* 编辑器 - flex-1 */}
-        <Editor
-          ref={editorRef}
-          content={activeTab?.content || ''}
-          onChange={handleContentChange}
-          key={activeTabId} // 关键：切换页签时重新挂载编辑器
+        {/* 2. 多文件页签 */}
+        <TabBar
+          tabs={tabs}
+          activeTabId={activeTabId}
+          onTabClick={handleTabClick}
+          onTabClose={handleCloseTab}
         />
+
+        {/* 搜索栏 */}
+        {showFindBar && (
+          <FindBar
+            editor={editorRef.current?.getEditor()}
+            onClose={() => setShowFindBar(false)}
+          />
+        )}
+
+        {/* 3. 主内容区域 */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* 侧边栏 - 0或16rem宽 */}
+          <Sidebar
+            content={activeTab?.content || ''}
+            onHeadingClick={handleHeadingClick}
+            isOpen={sidebarOpen}
+            onToggle={handleToggleSidebar}
+          />
+
+          {/* 编辑器 - flex-1 */}
+          <Editor
+            ref={editorRef}
+            content={activeTab?.content || ''}
+            onChange={handleContentChange}
+            key={activeTabId}
+          />
+        </div>
+
+        {/* 4. 底部状态栏 - 24px高 */}
+        <StatusBar
+          charCount={charCount}
+          lineCount={lineCount}
+          language={language === 'zh-CN' ? '简体中文' : 'English'}
+          encoding="UTF-8"
+          theme={resolvedTheme}
+        />
+
+        {/* 5. 设置对话框 */}
+        <SettingsModal
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+        />
+
+        {/* 6. 关于对话框 */}
+        <AboutModal
+          isOpen={showAbout}
+          onClose={() => setShowAbout(false)}
+        />
+
+        {/* 7. 转到行对话框 */}
+        {showGoToLine && (
+          <GoToLineModal
+            editor={editorRef.current?.getEditor()}
+            onClose={() => setShowGoToLine(false)}
+          />
+        )}
       </div>
-
-      {/* 4. 底部状态栏 - 24px高 */}
-      <StatusBar
-        charCount={charCount}
-        lineCount={lineCount}
-        language={language === 'zh-CN' ? '简体中文' : 'English'}
-        encoding="UTF-8"
-        theme={resolvedTheme}
-      />
-
-      {/* 5. 设置对话框 */}
-      <SettingsModal
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-      />
-
-      {/* 6. 关于对话框 */}
-      <AboutModal
-        isOpen={showAbout}
-        onClose={() => setShowAbout(false)}
-      />
-    </div>
+    </ErrorBoundary>
   )
 }
 

@@ -1,9 +1,27 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
 import { STORAGE_KEYS } from '../config/constants'
 
+export interface WordExportFont {
+  name: string
+  value: string
+}
+
+export const WORD_EXPORT_FONTS: WordExportFont[] = [
+  { name: '宋体 (SimSun)', value: "'SimSun', '宋体', serif" },
+  { name: '微软雅黑 (Microsoft YaHei)', value: "'Microsoft YaHei', '微软雅黑', 'PingFang SC', sans-serif" },
+  { name: '黑体 (SimHei)', value: "'SimHei', '黑体', sans-serif" },
+  { name: '楷体 (KaiTi)', value: "'KaiTi', '楷体', 'STKaiti', serif" },
+  { name: '思源黑体 (Noto Sans)', value: "'Noto Sans SC', '思源黑体', sans-serif" },
+  { name: 'Arial', value: "Arial, sans-serif" },
+  { name: 'Times New Roman', value: "'Times New Roman', Times, serif" },
+]
+
 interface Settings {
   pandocPath: string
-  fontSize: number  // 字体大小（px），默认 16
+  fontSize: number
+  autoSave: boolean
+  autoSaveInterval: number
+  wordExportFont: string
 }
 
 interface SettingsContextType {
@@ -13,7 +31,10 @@ interface SettingsContextType {
 
 const defaultSettings: Settings = {
   pandocPath: '',
-  fontSize: 16  // 默认 16px
+  fontSize: 16,
+  autoSave: true,
+  autoSaveInterval: 30000,
+  wordExportFont: "'SimSun', '宋体', serif",
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined)

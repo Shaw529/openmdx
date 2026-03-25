@@ -1,7 +1,7 @@
 export default {
   app: {
     title: 'OpenMDtx',
-    version: 'v1.2.0'
+    version: 'v1.4.0'
   },
   menu: {
     file: 'File',
@@ -43,7 +43,14 @@ export default {
     image: 'Image',
     table: 'Table',
     toggleSidebar: 'Toggle Sidebar',
-    about: 'About'
+    about: 'About',
+    find: 'Find',
+    findNext: 'Find Next',
+    findPrevious: 'Find Previous',
+    replace: 'Replace',
+    replaceOne: 'Replace',
+    replaceAll: 'Replace All',
+    goToLine: 'Go to Line'
   },
   toolbar: {
     new: 'New',
@@ -98,7 +105,9 @@ export default {
     pandocNotFound: 'Pandoc not found. Please install manually',
     pandocSearchError: 'Search failed. Please use in Electron environment',
     save: 'Save',
-    cancel: 'Cancel'
+    cancel: 'Cancel',
+    wordExportFont: 'Word Export Font',
+    wordExportFontHint: 'Font used when exporting Word documents'
   },
   dialog: {
     unsavedChanges: 'There are unsaved changes. Continue?',
@@ -163,5 +172,24 @@ export default {
     },
     renderError: 'Diagram render failed',
     invalidSyntax: 'Invalid syntax'
+  },
+  findBar: {
+    placeholder: 'Find',
+    replacePlaceholder: 'Replace',
+    matchCount: 'No match',
+    noResults: 'No match',
+    results: '{count} matches',
+    close: 'Close',
+    previous: 'Previous',
+    next: 'Next',
+    replaceBtn: 'Replace',
+    replaceAllBtn: 'Replace All',
+    caseSensitive: 'Match Case',
+    regex: 'Regex',
+    wholeWord: 'Whole Word',
+    goToLineTitle: 'Go to Line',
+    lineNumber: 'Line number (1-{total})',
+    goTo: 'Go',
+    cancel: 'Cancel'
   }
 }

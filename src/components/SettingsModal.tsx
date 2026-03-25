@@ -2,7 +2,7 @@ import { useState, memo } from 'react'
 import { X, Monitor, Sun, Moon, Settings as SettingsIcon, FolderOpen, Search, Loader2 } from 'lucide-react'
 import { useLanguage } from '../contexts/LanguageContext'
 import { useTheme } from '../contexts/ThemeContext'
-import { useSettings } from '../contexts/SettingsContext'
+import { useSettings, WORD_EXPORT_FONTS } from '../contexts/SettingsContext'
 import { THEMES, FILE_EXTENSIONS } from '../config/constants'
 import { checkElectronAPI } from '../utils/electronAPI'
 
@@ -21,11 +21,12 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { theme, setTheme } = useTheme()
   const { settings, updateSettings } = useSettings()
   const [pandocPath, setPandocPath] = useState(settings.pandocPath)
+  const [wordExportFont, setWordExportFont] = useState(settings.wordExportFont)
   const [isSearching, setIsSearching] = useState(false)
   const [searchMessage, setSearchMessage] = useState('')
 
   const handleSave = () => {
-    updateSettings({ pandocPath })
+    updateSettings({ pandocPath, wordExportFont })
     onClose()
   }
 
@@ -165,6 +166,27 @@ function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
               {t.settings.export}
             </h3>
+
+            {/* Word Export Font */}
+            <div className="mb-4">
+              <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
+                {t.settings.wordExportFont}
+              </label>
+              <select
+                value={wordExportFont}
+                onChange={(e) => setWordExportFont(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {WORD_EXPORT_FONTS.map(font => (
+                  <option key={font.value} value={font.value}>
+                    {font.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {t.settings.wordExportFontHint}
+              </p>
+            </div>
 
             <div>
               <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">

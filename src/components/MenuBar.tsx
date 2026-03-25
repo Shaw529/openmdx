@@ -16,6 +16,9 @@ interface MenuBarProps {
   onOpenSettings: () => void
   onToggleSidebar: () => void
   onShowAbout: () => void
+  onFind: () => void
+  onReplace: () => void
+  onGoToLine: () => void
 }
 
 type MenuType = 'file' | 'edit' | 'paragraph' | 'diagram' | 'format' | 'view' | 'help' | null
@@ -36,7 +39,10 @@ function MenuBar({
   onExportWord,
   onOpenSettings,
   onToggleSidebar,
-  onShowAbout
+  onShowAbout,
+  onFind,
+  onReplace,
+  onGoToLine
 }: MenuBarProps) {
   const { t } = useLanguage()
   const [activeMenu, setActiveMenu] = useState<MenuType>(null)
@@ -92,6 +98,10 @@ function MenuBar({
       <MenuItem onClick={() => editor?.chain().focus().copy().run()} shortcut="Ctrl+C" label={t.menu.copy} disabled={!canEdit} />
       <MenuItem onClick={() => editor?.chain().focus().paste().run()} shortcut="Ctrl+V" label={t.menu.paste} disabled={!canEdit} />
       <MenuItem onClick={() => editor?.chain().focus().selectAll().run()} shortcut="Ctrl+A" label={t.menu.selectAll} disabled={!canEdit} />
+      <Divider />
+      <MenuItem onClick={onFind} shortcut="Ctrl+F" label={t.menu.find} disabled={!canEdit} />
+      <MenuItem onClick={onReplace} shortcut="Ctrl+H" label={t.menu.replace} disabled={!canEdit} />
+      <MenuItem onClick={onGoToLine} shortcut="Ctrl+G" label={t.menu.goToLine} disabled={!canEdit} />
     </div>
   )
 
