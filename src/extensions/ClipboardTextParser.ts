@@ -1,7 +1,7 @@
 import { Extension } from '@tiptap/core'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { DOMParser, Fragment, Slice } from '@tiptap/pm/model'
-import { marked } from 'marked'
+import { marked } from '../utils/markdown'
 
 /**
  * Mermaid 代码块信息

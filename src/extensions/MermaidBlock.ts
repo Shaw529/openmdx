@@ -1,7 +1,7 @@
 import { Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 import { MermaidBlockNodeView } from './MermaidBlockNodeView'
-import type { MermaidDiagramType } from '../utils/mermaidRenderer'
+import type { MermaidDiagramType, ExtendedMermaidTheme } from '../utils/mermaidRenderer'
 
 /**
  * MermaidBlock 节点属性
@@ -9,7 +9,8 @@ import type { MermaidDiagramType } from '../utils/mermaidRenderer'
 export interface MermaidBlockAttributes {
   diagramType: MermaidDiagramType
   viewMode: 'source' | 'preview' | 'split'
-  theme: 'default' | 'dark' | 'forest' | 'neutral' | 'base' | 'rainbow'
+  theme: ExtendedMermaidTheme
+  customThemeId?: string // 自定义主题 ID（当 theme 为 'custom' 时使用）
 }
 
 /**
@@ -67,13 +68,23 @@ export const MermaidBlock = Node.create<MermaidBlockAttributes>({
         }),
       },
       theme: {
-        default: 'default',
+        default: 'custom', // 默认使用自定义主题
         parseHTML: element => {
           const theme = element.getAttribute('data-theme')
-          return (theme as MermaidBlockAttributes['theme']) || 'default'
+          return (theme as ExtendedMermaidTheme) || 'custom'
         },
         renderHTML: attributes => ({
           'data-theme': attributes.theme,
+        }),
+      },
+      customThemeId: {
+        default: 'modern-light', // 默认使用现代浅色主题
+        parseHTML: element => {
+          const themeId = element.getAttribute('data-custom-theme-id')
+          return themeId || 'modern-light'
+        },
+        renderHTML: attributes => ({
+          'data-custom-theme-id': attributes.customThemeId,
         }),
       },
     }
@@ -87,7 +98,8 @@ export const MermaidBlock = Node.create<MermaidBlockAttributes>({
         getAttrs: element => ({
           diagramType: (element as HTMLElement).getAttribute('data-diagram-type') || 'flowchart',
           viewMode: (element as HTMLElement).getAttribute('data-view-mode') || 'source',
-          theme: (element as HTMLElement).getAttribute('data-theme') || 'default',
+          theme: ((element as HTMLElement).getAttribute('data-theme') as ExtendedMermaidTheme) || 'custom',
+          customThemeId: (element as HTMLElement).getAttribute('data-custom-theme-id') || 'modern-light',
         }),
       },
     ]
@@ -103,6 +115,7 @@ export const MermaidBlock = Node.create<MermaidBlockAttributes>({
           'data-diagram-type': node.attrs.diagramType,
           'data-view-mode': node.attrs.viewMode,
           'data-theme': node.attrs.theme,
+          'data-custom-theme-id': node.attrs.customThemeId || 'modern-light',
           class: 'mermaid-block',
         },
         HTMLAttributes
@@ -128,14 +141,16 @@ export const MermaidBlock = Node.create<MermaidBlockAttributes>({
       insertMermaidBlock: (options: {
         diagramType?: MermaidDiagramType
         content?: string
-        theme?: MermaidBlockAttributes['theme']
+        theme?: ExtendedMermaidTheme
+        customThemeId?: string
       } = {}) => ({ commands }) => {
         return commands.insertContent({
           type: this.name,
           attrs: {
             diagramType: options.diagramType || 'flowchart',
             viewMode: 'source',
-            theme: options.theme || 'default',
+            theme: options.theme || 'custom',
+            customThemeId: options.customThemeId || 'modern-light',
           },
           content: options.content
             ? [{ type: 'text', text: options.content }]
@@ -160,8 +175,11 @@ export const MermaidBlock = Node.create<MermaidBlockAttributes>({
       /**
        * 更新主题
        */
-      updateMermaidTheme: (theme: MermaidBlockAttributes['theme']) => ({ commands }) => {
-        return commands.updateAttributes(this.name, { theme })
+      updateMermaidTheme: (theme: ExtendedMermaidTheme, customThemeId?: string) => ({ commands }) => {
+        return commands.updateAttributes(this.name, {
+          theme,
+          ...(customThemeId ? { customThemeId } : {})
+        })
       },
     }
   },

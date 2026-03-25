@@ -5,6 +5,8 @@
  */
 
 import { renderMermaid } from './mermaidRenderer'
+import { getThemeById } from '../constants/mermaidThemes'
+import type { ExtendedMermaidTheme } from './mermaidRenderer'
 
 /**
  * 处理 HTML 中的 Mermaid 图表
@@ -33,15 +35,17 @@ export async function processMermaidInHTML(
 
     if (sourceCodeElement) {
       const sourceCode = sourceCodeElement.textContent || ''
-      const diagramType = block.getAttribute('data-diagram-type') || 'flowchart'
-      const theme = (block.getAttribute('data-theme') || 'default') as 'default' | 'dark' | 'forest' | 'neutral'
+      const theme = (block.getAttribute('data-theme') || 'default') as ExtendedMermaidTheme
+      const customThemeId = block.getAttribute('data-custom-theme-id') || 'modern-light'
+      const customTheme = theme === 'custom' ? getThemeById(customThemeId) : undefined
 
       try {
         // 渲染 Mermaid 为 SVG
         const { svg } = await renderMermaid(
           sourceCode,
           `mermaid-export-${Date.now()}-${i}`,
-          theme
+          theme,
+          customTheme
         )
 
         // 创建容器

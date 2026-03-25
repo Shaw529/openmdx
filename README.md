@@ -4,7 +4,7 @@
 
 **🚀 一个强大的 Markdown 编辑器，基于 Electron + React + TipTap 构建**
 
-[![CI](https://github.com/Shaw529/openmdx/actions/workflows/ci.yml/badge.svg)](https://github.com/Shaw529/openmdx/actions/workflows/ci.yml)
+[![CI](https://github.com/Xiaoqiang-Zhao/Mdtx/actions/workflows/ci.yml/badge.svg)](https://github.com/Xiaoqiang-Zhao/Mdtx/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Electron](https://img.shields.io/badge/Electron-40.1.0-999999?logo=electron)](https://www.electronjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.0-61DAFB?logo=react)](https://react.dev/)
@@ -31,6 +31,19 @@
 - ✅ **图片插入** - 支持拖拽和粘贴图片
 - ✅ **链接支持** - 快速插入和编辑链接
 
+### 🔍 搜索与替换
+- ✅ **快速查找** - Ctrl+F 打开搜索面板
+- ✅ **替换功能** - Ctrl+H 打开替换面板
+- ✅ **正则表达式** - 支持正则表达式搜索
+- ✅ **全词匹配** - 精确匹配整个单词
+- ✅ **区分大小写** - 切换大小写敏感
+- ✅ **实时高亮** - 所有匹配结果即时高亮显示
+- ✅ **批量替换** - 支持替换单个或全部匹配
+
+### ⌨️ 导航功能
+- ✅ **跳转行号** - Ctrl+G 快速跳转到指定行
+- ✅ **行号显示** - 状态栏显示当前行和总行数
+
 ### 🌍 国际化与主题
 - ✅ **多语言支持** - 中文（简体）、English
 - ✅ **主题切换** - 浅色、深色、跟随系统
@@ -40,9 +53,16 @@
 - ✅ **PDF 导出** - 使用 Electron 原生打印功能
 - ✅ **HTML 导出** - 完整格式的 HTML 文档
 - ✅ **Word 导出** - 通过 Pandoc 导出为 .docx 格式
-  - 🎯 字体：宋体 (SimSun)
+  - 🎯 **字体选择** - 支持 7 种中文字体（宋体、微软雅黑、黑体、楷体、华文细黑、仿宋、方正姚体）
   - 🎯 颜色：纯黑色 (#000000)
   - 🎯 符合中文排版规范
+  - 🎯 支持自定义 Word 模板
+
+### 📊 图表支持
+- ✅ **Mermaid 图表** - 支持流程图、时序图、类图、状态图等 15+ 种图表
+- ✅ **多种主题** - 默认、暗色、森林、中性、基础、彩虹等主题风格
+- ✅ **实时预览** - 源码、预览、拆分三种视图模式
+- ✅ **主题修复** - 修复主题配置不生效的问题
 
 ### ⚙️ 高级功能
 - ✅ **Pandoc 集成** - 自动搜索或手动配置 Pandoc 路径
@@ -69,11 +89,11 @@
 
 ### 下载应用
 
-**[📥 下载最新版本 v1.1.0](https://github.com/Shaw529/openmdx/releases/latest)**
+**[📥 下载最新版本 v1.4.0](https://github.com/Xiaoqiang-Zhao/Mdtx/releases/latest)**
 
 #### 方式一：安装程序（推荐）
 
-1. 下载 `OpenMDtx Setup 1.1.0.exe` (97 MB)
+1. 下载 `OpenMDtx Setup 1.4.0.exe`
 2. 双击运行安装程序
 3. 选择安装位置
 4. 点击"安装"按钮
@@ -81,12 +101,12 @@
 
 #### 方式二：绿色便携版
 
-1. 下载 `OpenMDtx-Portable-1.1.0.zip` (140 MB)
+1. 下载 `OpenMDtx-Portable-1.4.0.zip`
 2. 解压到任意目录
 3. 双击 `OpenMDtx.exe` 运行
 4. 无需安装，可放在 U 盘中使用
 
-详细下载说明请查看 [RELEASE_INSTRUCTIONS.md](https://github.com/Shaw529/openmdx/blob/main/RELEASE_INSTRUCTIONS.md)
+详细下载说明请查看 [RELEASE_INSTRUCTIONS.md](https://github.com/Xiaoqiang-Zhao/Mdtx/blob/main/RELEASE_INSTRUCTIONS.md)
 
 ### 配置 Pandoc（可选）
 
@@ -145,10 +165,11 @@
 5. 等待导出完成
 
 **Word 导出特性**：
-- 字体：宋体 (SimSun)
+- **字体选择** - 支持 7 种中文字体：宋体、微软雅黑、黑体、楷体、华文细黑、仿宋、方正姚体
 - 颜色：纯黑色 (#000000)
 - 完美保留 Markdown 格式
 - 适合正式文档和报告
+- 支持自定义 Word 模板
 
 ---
 
@@ -172,6 +193,11 @@
 | `Ctrl+C` | 复制 |
 | `Ctrl+V` | 粘贴 |
 | `Ctrl+X` | 剪切 |
+| `Ctrl+F` | 查找 |
+| `Ctrl+H` | 替换 |
+| `Ctrl+G` | 转到行 |
+| `F3` 或 `Enter` | 查找下一个 |
+| `Shift+F3` | 查找上一个 |
 
 ### 格式化
 
@@ -274,8 +300,8 @@ openmdtx/
 
 ```bash
 # 克隆仓库
-git clone https://github.com/Shaw529/openmdx.git
-cd openmdx
+git clone https://github.com/Xiaoqiang-Zhao/Mdtx.git
+cd Mdtx
 
 # 安装依赖
 npm install
@@ -311,7 +337,7 @@ npm run pack
 ```
 
 构建产物位于 `release/` 目录：
-- `OpenMDtx Setup 1.1.0.exe` - 安装程序
+- `OpenMDtx Setup 1.4.0.exe` - 安装程序
 - `win-unpacked/` - 便携版目录
 
 **发布到 GitHub**: 运行 `create-release.bat` 脚本自动创建 Release 并上传文件
@@ -340,6 +366,38 @@ npm run pack
 ---
 
 ## 📝 更新日志
+
+### v1.4.0 (2026-03-25)
+
+#### ✨ 新增功能
+
+- ✅ **搜索与替换**
+  - 支持 Ctrl+F 快速查找
+  - 支持 Ctrl+H 替换
+  - 支持正则表达式、区分大小写、全词匹配
+  - 实时高亮显示所有匹配结果
+  - 支持替换单个或全部匹配
+
+- ✅ **跳转行号**
+  - 支持 Ctrl+G 快速跳转到指定行
+  - 状态栏显示当前行号和总行数
+
+- ✅ **Word 导出优化**
+  - 新增字体选择器，支持 7 种中文字体
+  - 优化导出样式（标题边框、段落缩进、表格斑马纹、引用块）
+  - 支持自定义 Word 模板
+
+- ✅ **Mermaid 图表增强**
+  - 修复主题配置不生效的问题
+  - 支持 6 种主题风格
+  - 支持 15+ 种图表类型
+
+#### 🔧 改进
+
+- 优化 Word 导出 CSS 样式
+- 改进文档渲染效果
+
+---
 
 ### v1.0.0 (2025-02-01)
 
@@ -411,7 +469,7 @@ A: 请确保下载的是最新版本。如果问题仍然存在，请提交 Issu
 ```
 MIT License
 
-Copyright (c) 2025 xiaoq16
+Copyright (c) 2026 xiaoq16
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -449,6 +507,6 @@ SOFTWARE.
 
 **Made with ❤️ by xiaoq16**
 
-[官网](https://github.com/Shaw529/openmdx) • [下载](https://github.com/Shaw529/openmdx/releases/latest) • [文档](https://github.com/Shaw529/openmdx/blob/main/RELEASE_INSTRUCTIONS.md) • [问题反馈](https://github.com/Shaw529/openmdx/issues)
+[官网](https://github.com/Xiaoqiang-Zhao/Mdtx) • [下载](https://github.com/Xiaoqiang-Zhao/Mdtx/releases/latest) • [文档](https://github.com/Xiaoqiang-Zhao/Mdtx/blob/main/RELEASE_INSTRUCTIONS.md) • [问题反馈](https://github.com/Xiaoqiang-Zhao/Mdtx/issues)
 
 </div>

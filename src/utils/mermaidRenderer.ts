@@ -1,4 +1,6 @@
 import mermaid from 'mermaid'
+import type { CustomMermaidTheme } from '../constants/mermaidThemes'
+import { CUSTOM_MERMAID_THEMES, getThemeById } from '../constants/mermaidThemes'
 
 /**
  * Mermaid 图表类型
@@ -31,12 +33,14 @@ export class MermaidRenderError extends Error {
 }
 
 /**
- * Mermaid 主题类型
+ * Mermaid 主题类型（保留旧版兼容性）
+ * @deprecated 使用 CustomMermaidTheme 代替
  */
 export type MermaidTheme = 'default' | 'dark' | 'forest' | 'neutral' | 'base' | 'rainbow'
 
 /**
- * Mermaid 主题配置
+ * Mermaid 主题配置（保留旧版兼容性）
+ * @deprecated 使用 CustomMermaidTheme 代替
  */
 export interface MermaidThemeConfig {
   value: MermaidTheme
@@ -45,7 +49,8 @@ export interface MermaidThemeConfig {
 }
 
 /**
- * 可用的 Mermaid 主题列表
+ * 可用的 Mermaid 主题列表（保留旧版兼容性）
+ * @deprecated 使用 CUSTOM_MERMAID_THEMES 代替
  */
 export const MERMAID_THEMES: MermaidThemeConfig[] = [
   { value: 'default', label: '默认', description: '标准主题' },
@@ -57,37 +62,66 @@ export const MERMAID_THEMES: MermaidThemeConfig[] = [
 ]
 
 /**
- * 初始化 Mermaid
+ * 扩展的主题类型，支持自定义主题
+ */
+export type ExtendedMermaidTheme = MermaidTheme | 'custom'
+
+/**
+ * 主题配置接口（扩展版）
+ */
+export interface ExtendedThemeConfig {
+  value: ExtendedMermaidTheme
+  customThemeId?: string // 当 value 为 'custom' 时使用
+  label: string
+  description?: string
+}
+
+/**
+ * 初始化 Mermaid（支持自定义主题）
  *
  * @param theme - 主题配置
+ * @param customTheme - 自定义主题对象（可选）
  */
-export function initMermaid(theme: MermaidTheme = 'default'): void {
-  mermaid.initialize({
+export function initMermaid(
+  theme: ExtendedMermaidTheme = 'default',
+  customTheme?: CustomMermaidTheme
+): void {
+  const config: Record<string, any> = {
     startOnLoad: false,
-    theme,
+    theme: theme === 'custom' ? 'base' : theme,
     logLevel: 0, // 关闭 mermaid 的日志输出
     securityLevel: 'loose', // 允许 HTML
-    fontFamily: 'arial',
+    // 使用更现代的字体栈
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     fontSize: 16,
     // 启用实验性功能（quadrantChart 和 requirementDiagram 需要）
     quadrantChart: {},
     requirementDiagram: {},
-  })
+  }
+
+  // 如果使用自定义主题，应用主题变量
+  if (theme === 'custom' && customTheme) {
+    config.themeVariables = customTheme.themeVariables
+  }
+
+  mermaid.initialize(config)
 }
 
 /**
- * 渲染 Mermaid 图表为 SVG
+ * 渲染 Mermaid 图表为 SVG（支持自定义主题）
  *
  * @param code - Mermaid 代码
  * @param id - 唯一标识符
- * @param theme - 主题
+ * @param theme - 主题类型
+ * @param customTheme - 自定义主题对象（可选）
  * @returns SVG 字符串和绑定函数
  * @throws {MermaidRenderError} 渲染失败时抛出
  */
 export async function renderMermaid(
   code: string,
   id: string,
-  theme: MermaidTheme = 'default'
+  theme: ExtendedMermaidTheme = 'default',
+  customTheme?: CustomMermaidTheme
 ): Promise<{ svg: string; bindFunctions?: Function }> {
   try {
     // Mermaid 11.x: 动态更改主题需要在每次渲染时重新初始化
@@ -95,23 +129,35 @@ export async function renderMermaid(
     delete (mermaid as any).config
 
     // 重新初始化并设置主题
-    initMermaid(theme)
+    initMermaid(theme, customTheme)
 
     // 检测图表类型
     const diagramType = detectDiagramType(code)
+
+    // Mermaid 11.x: 通过 %%{init:...}%% 指令嵌入主题配置
+    let codeToRender = code
+    if (theme === 'custom' && customTheme) {
+      const initDirective = `%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': ${JSON.stringify(customTheme.themeVariables).replace(/"/g, "'")}
+  }
+}%%`
+      codeToRender = initDirective + '\n' + code
+    }
 
     // 对于实验性图表类型（quadrant 和 requirement），跳过验证
     // 因为 parse 方法可能不支持它们
     if (diagramType !== 'quadrant' && diagramType !== 'requirement') {
       // 验证语法
-      const isValid = await validateMermaid(code)
+      const isValid = await validateMermaid(codeToRender)
       if (!isValid) {
         throw new MermaidRenderError('Invalid Mermaid syntax')
       }
     }
 
     // 渲染图表
-    const { svg } = await mermaid.render(id, code)
+    const { svg } = await mermaid.render(id, codeToRender)
     return { svg }
   } catch (error) {
     // 输出详细错误信息到控制台

@@ -4,9 +4,11 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTheme } from '../contexts/ThemeContext'
 import { useLanguage } from '../contexts/LanguageContext'
 import type { MermaidBlockAttributes } from './MermaidBlock'
-import type { MermaidDiagramType } from '../utils/mermaidRenderer'
+import type { MermaidDiagramType, ExtendedMermaidTheme } from '../utils/mermaidRenderer'
 import { renderMermaid, MERMAID_THEMES } from '../utils/mermaidRenderer'
 import { MermaidCodeEditor } from '../components/MermaidCodeEditor'
+import { MermaidThemeSelector } from '../components/MermaidThemeSelector'
+import { CUSTOM_MERMAID_THEMES, getThemeById, getLightThemes, getDarkThemes, getDefaultTheme } from '../constants/mermaidThemes'
 
 /**
  * MermaidBlockNodeView 组件
@@ -83,9 +85,15 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
     setRenderError(null)
 
     try {
-      // 使用本地状态的主题
-      const mermaidTheme = currentTheme === 'default' && resolvedTheme === 'dark' ? 'dark' : currentTheme
-      const { svg } = await renderMermaid(code, `mermaid-${Date.now()}`, mermaidTheme)
+      // 获取自定义主题对象
+      const customTheme = attrs.theme === 'custom' && attrs.customThemeId
+        ? getThemeById(attrs.customThemeId)
+        : undefined
+
+      // 如果没有自定义主题，使用系统默认主题
+      const themeToUse = customTheme ? 'custom' as ExtendedMermaidTheme : attrs.theme
+
+      const { svg } = await renderMermaid(code, `mermaid-${Date.now()}`, themeToUse, customTheme)
       setRenderedSvg(svg)
     } catch (error) {
       console.error('Mermaid render error:', error)
@@ -94,7 +102,7 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
     } finally {
       setIsRendering(false)
     }
-  }, [currentTheme, resolvedTheme])
+  }, [attrs.theme, attrs.customThemeId])
 
   // 防抖渲染
   useEffect(() => {
@@ -112,7 +120,7 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
     if (viewMode !== 'source' && sourceCode.trim()) {
       renderDiagram(sourceCode)
     }
-  }, [currentTheme]) // 仅监听 currentTheme
+  }, [attrs.theme, attrs.customThemeId]) // 监听主题属性变化
 
   // 处理源码变更
   const handleSourceChange = useCallback((newCode: string) => {
@@ -181,9 +189,12 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
   }, [updateAttributes])
 
   // 切换主题
-  const handleThemeChange = useCallback((newTheme: MermaidBlockAttributes['theme']) => {
+  const handleThemeChange = useCallback((newTheme: ExtendedMermaidTheme, customThemeId?: string) => {
     // 同时更新节点属性和本地状态
-    updateAttributes({ theme: newTheme })
+    updateAttributes({
+      theme: newTheme,
+      ...(customThemeId ? { customThemeId } : {})
+    })
     setCurrentTheme(newTheme)
   }, [updateAttributes])
 
@@ -247,15 +258,20 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
       }}
     >
       {/* 控制栏 */}
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-gray-50 dark:bg-gray-700 rounded-t-lg">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between px-4 py-3 border-b bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750 rounded-t-lg">
+        <div className="flex items-center gap-3">
           {/* 图表信息 */}
-          <span className="text-sm text-gray-600 dark:text-gray-300">
-            {t.mermaid[diagramType as keyof typeof t.mermaid] || '图表'}
-          </span>
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-indigo-500 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+              {t.mermaid[diagramType as keyof typeof t.mermaid] || '图表'}
+            </span>
+          </div>
 
           {/* 分隔符 */}
-          <div className="h-4 w-px bg-gray-300 dark:bg-gray-600" />
+          <div className="h-5 w-px bg-gray-300 dark:bg-gray-600" />
 
           {/* 视图模式切换按钮 */}
           <div className="flex items-center gap-1">
@@ -265,10 +281,10 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
                 e.stopPropagation()
                 handleViewModeChange('source')
               }}
-              className={`px-3 py-1 text-sm rounded transition-colors ${
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
                 viewMode === 'source'
-                  ? 'bg-blue-500 text-white hover:bg-blue-600'
-                  : 'bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200'
+                  ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
+                  : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
               }`}
               title="源码模式"
             >
@@ -280,10 +296,10 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
                 e.stopPropagation()
                 handleViewModeChange('preview')
               }}
-              className={`px-3 py-1 text-sm rounded transition-colors ${
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
                 viewMode === 'preview'
-                  ? 'bg-blue-500 text-white hover:bg-blue-600'
-                  : 'bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200'
+                  ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30'
+                  : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
               }`}
               title="预览模式"
             >
@@ -292,20 +308,32 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
           </div>
         </div>
 
-        {/* 删除按钮 */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation()
-            handleDelete()
-          }}
-          className="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-          title="删除图表"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        {/* 右侧操作区 */}
+        <div className="flex items-center gap-3">
+          {/* 主题选择器 */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <MermaidThemeSelector
+              currentThemeId={attrs.customThemeId || 'modern-light'}
+              onThemeChange={(themeId) => handleThemeChange('custom', themeId)}
+              isDark={resolvedTheme === 'dark'}
+            />
+          </div>
+
+          {/* 删除按钮 */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleDelete()
+            }}
+            className="text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+            title="删除图表"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* 内容区域 */}
@@ -406,7 +434,7 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
             {/* 预览内容容器 */}
             <div
               ref={previewRef}
-              className={`p-4 min-h-[256px] flex items-center justify-center bg-white dark:bg-gray-900 overflow-auto ${
+              className={`p-6 min-h-[256px] flex items-center justify-center bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-850 overflow-auto ${
                 isMaximized ? 'fixed inset-0 z-50 m-0 rounded-none' : ''
               }`}
               style={isMaximized ? {} : {}}

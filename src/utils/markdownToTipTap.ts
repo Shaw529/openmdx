@@ -1,4 +1,4 @@
-import { marked } from 'marked'
+import { marked } from './markdown'
 import { DOMParser, Fragment, Slice } from '@tiptap/pm/model'
 
 /**

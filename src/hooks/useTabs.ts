@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
 import { checkElectronAPI } from '../utils/electronAPI'
 import { confirmUnsavedChanges } from '../utils/dialog'
-import { marked } from 'marked'
+import { marked } from '../utils/markdown'
 
 /**
  * 将 HTML 转换为 Markdown

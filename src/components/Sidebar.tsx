@@ -47,7 +47,6 @@ function Sidebar({ content, onHeadingClick, isOpen, onToggle }: SidebarProps) {
   const { t } = useLanguage()
   const [headings, setHeadings] = useState<Heading[]>([])
 
-  // 使用防抖的函数来更新标题
   const updateHeadings = useMemo(
     () =>
       debounce((newContent: string) => {
