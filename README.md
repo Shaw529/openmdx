@@ -250,8 +250,7 @@ openmdtx/
 ├── src/
 │   ├── components/          # React 组件
 │   │   ├── Editor.tsx       # 主编辑器
-│   │   ├── MenuBar.tsx      # 菜单栏
-│   │   ├── Toolbar.tsx      # 工具栏
+│   │   ├── MenuBar.tsx      # 菜单栏（含工具栏功能）
 │   │   ├── Sidebar.tsx      # 大纲侧边栏
 │   │   ├── TabBar.tsx       # 文件页签
 │   │   ├── StatusBar.tsx    # 状态栏
@@ -340,7 +339,7 @@ npm run pack
 - `OpenMDtx Setup 1.4.0.exe` - 安装程序
 - `win-unpacked/` - 便携版目录
 
-**发布到 GitHub**: 运行 `create-release.bat` 脚本自动创建 Release 并上传文件
+**发布到 GitHub**: 使用 `gh release create` 命令手动创建 Release 并上传构建产物
 
 ---
 

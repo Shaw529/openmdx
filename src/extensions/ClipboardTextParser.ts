@@ -1,104 +1,12 @@
 import { Extension } from '@tiptap/core'
-import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { PluginKey, Plugin } from '@tiptap/pm/state'
+import type { EditorView } from '@tiptap/pm/view'
 import { DOMParser, Fragment, Slice } from '@tiptap/pm/model'
+import type { Node as PMNode } from '@tiptap/pm/model'
 import { marked } from '../utils/markdown'
-
-/**
- * Mermaid 代码块信息
- */
-interface MermaidBlock {
-  content: string
-  startIndex: number
-  endIndex: number
-  diagramType: string
-}
-
-/**
- * 从文本中提取所有 mermaid 代码块
- * 按 "```" 分割，检查每个代码块的第一行是否为 "mermaid"
- */
-function extractMermaidBlocks(text: string): MermaidBlock[] {
-  const blocks: MermaidBlock[] = []
-  // 按 "```" 分割文本
-  const parts = text.split('```')
-
-  // 遍历每个代码块（跳过最后一个，因为 ``` 后面没有内容）
-  for (let i = 0; i < parts.length - 1; i++) {
-    const content = parts[i + 1] // ``` 之后的内容（代码块内容）
-
-    // 检查 content 的第一行是否是 "mermaid"
-    const firstLine = content.trim().split('\n')[0].trim()
-
-    // 如果第一行是 "mermaid"，则这是一个 mermaid 代码块
-    if (firstLine === 'mermaid') {
-      // 去掉第一行的 "mermaid"，获取实际内容
-      const lines = content.split('\n')
-      const mermaidContent = lines.slice(1).join('\n').trim()
-      const diagramType = detectDiagramType(mermaidContent)
-
-      blocks.push({
-        content: mermaidContent,
-        startIndex: 0,
-        endIndex: mermaidContent.length,
-        diagramType,
-      })
-    }
-  }
-
-  return blocks
-}
-
-/**
- * 检测 Mermaid 图表类型
- */
-function detectDiagramType(content: string): string {
-  const typePatterns = [
-    { regex: /^graph\s+(?:TD|LR|RL|BT)/im, type: 'flowchart' },
-    { regex: /^graph\s+/im, type: 'flowchart' },
-    { regex: /^flowchart/im, type: 'flowchart' },
-    { regex: /^sequenceDiagram/im, type: 'sequence' },
-    { regex: /^classDiagram/im, type: 'class' },
-    { regex: /^stateDiagram/im, type: 'state' },
-    { regex: /^gantt/im, type: 'gantt' },
-    { regex: /^pie/im, type: 'pie' },
-    { regex: /^mindmap/im, type: 'mindmap' },
-    { regex: /^erDiagram/im, type: 'er' },
-    { regex: /^gitGraph/im, type: 'git' },
-    { regex: /^timeline/im, type: 'timeline' },
-    { regex: /^journey/im, type: 'journey' },
-    { regex: /^quadrantChart/im, type: 'quadrant' },
-    { regex: /^C4Context/im, type: 'c4' },
-    { regex: /^requirementDiagram/im, type: 'requirement' },
-  ]
-
-  for (const { regex, type } of typePatterns) {
-    if (regex.test(content)) {
-      return type
-    }
-  }
-
-  return 'flowchart' // 默认类型
-}
-
-/**
- * 检测文本是否包含Markdown语法
- */
-function hasMarkdownSyntax(text: string): boolean {
-  const patterns = [
-    /^#{1,6}\s/m,           // 标题 # ## ### etc.
-    /\*\*[^*]+\*\*/m,       // 粗体 **text**
-    /\*[^*]+\*/m,           // 斜体 *text*
-    /^[-*+]\s/m,            // 无序列表 - or *
-    /^\d+\.\s/m,            // 有序列表 1.
-    /^>\s/m,                // 引用 >
-    /`[^`]+`/m,             // 行内代码 `code`
-    /^```/m,                // 代码块 ```
-    /\[.*\]\(.*\)/m,       // 链接 [text](url)
-    /^\|.*\|/m,             // 表格
-  ]
-
-  return patterns.some(pattern => pattern.test(text))
-}
+import { extractMermaidBlocks, hasMarkdownSyntax } from '../utils/mermaidParser'
+import type { MermaidBlock } from '../utils/mermaidParser'
+import type { Schema } from '@tiptap/pm/model'
 
 /**
  * Markdown粘贴解析扩展
@@ -154,7 +62,7 @@ export const ClipboardTextParser = Extension.create({
 /**
  * 粘贴普通 Markdown（不包含 mermaid）
  */
-function pasteMarkdown(view: any, text: string, schema: any): boolean {
+function pasteMarkdown(view: EditorView, text: string, schema: Schema): boolean {
   try {
     // 先用 marked 转换
     let html = marked(text)
@@ -203,14 +111,14 @@ function pasteMarkdown(view: any, text: string, schema: any): boolean {
  * 自动识别 ```mermaid 代码块并转换为 MermaidBlock 节点
  */
 function pasteMarkdownWithMermaid(
-  view: any,
+  view: EditorView,
   text: string,
   mermaidBlocks: MermaidBlock[],
-  schema: any
+  schema: Schema
 ): boolean {
   try {
     let lastIndex = 0
-    const contentNodes: any[] = []
+    const contentNodes: PMNode[] = []
 
     // 按顺序处理每个 mermaid 代码块和它们之间的内容
     for (let i = 0; i < mermaidBlocks.length; i++) {
@@ -227,7 +135,7 @@ function pasteMarkdownWithMermaid(
           const slice = domParser.parseSlice(div)
 
           // 将 slice 的内容转换为节点数组
-          slice.content.forEach((node: any) => {
+          slice.content.forEach((node: PMNode) => {
             contentNodes.push(node)
           })
         }
@@ -264,7 +172,7 @@ function pasteMarkdownWithMermaid(
         const slice = domParser.parseSlice(div)
 
         // 将 slice 的内容转换为节点数组
-        slice.content.forEach((node: any) => {
+        slice.content.forEach((node: PMNode) => {
           contentNodes.push(node)
         })
       }

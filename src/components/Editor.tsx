@@ -1,4 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react'
+import type { Editor as TiptapEditor } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import TaskList from '@tiptap/extension-task-list'
@@ -35,7 +36,7 @@ interface EditorProps {
 export interface EditorRef {
   getCharCount: () => number
   getLineCount: () => number
-  getEditor: () => unknown
+  getEditor: () => TiptapEditor | null
   scrollToHeading: (headingId: string) => void
 }
 

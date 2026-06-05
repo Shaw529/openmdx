@@ -39,7 +39,8 @@ mark.search-highlight,
 span.search-highlight,
 .ProseMirror mark.search-highlight,
 .ProseMirror span.search-highlight {
-  background-color: #fef08a !important;
+  background-color: transparent !important;
+  border: 2px solid #ef4444 !important;
   border-radius: 2px;
   padding: 0 1px;
 }
@@ -48,7 +49,7 @@ span.search-highlight,
 .dark span.search-highlight,
 .dark .ProseMirror mark.search-highlight,
 .dark .ProseMirror span.search-highlight {
-  background-color: #b45309 !important;
+  border-color: #f87171 !important;
 }
 
 /* 编辑器样式 */

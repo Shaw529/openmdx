@@ -3,100 +3,7 @@ import { useLanguage } from '../contexts/LanguageContext'
 import { checkElectronAPI } from '../utils/electronAPI'
 import { confirmUnsavedChanges } from '../utils/dialog'
 import { marked } from '../utils/markdown'
-
-/**
- * 将 HTML 转换为 Markdown
- */
-function htmlToMarkdown(html: string): string {
-  // 创建临时 DOM 元素
-  const div = document.createElement('div')
-  div.innerHTML = html
-
-  // 递归转换 DOM 为 Markdown
-  let markdown = ''
-
-  function processNode(node: Node): string {
-    if (node.nodeType === Node.TEXT_NODE) {
-      return node.textContent || ''
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      const el = node as HTMLElement
-      const tag = el.tagName.toLowerCase()
-
-      switch (tag) {
-        case 'h1':
-          return `# ${el.textContent}\n\n`
-        case 'h2':
-          return `## ${el.textContent}\n\n`
-        case 'h3':
-          return `### ${el.textContent}\n\n`
-        case 'h4':
-          return `#### ${el.textContent}\n\n`
-        case 'h5':
-          return `##### ${el.textContent}\n\n`
-        case 'h6':
-          return `###### ${el.textContent}\n\n`
-        case 'strong':
-        case 'b':
-          return `**${el.textContent}**`
-        case 'em':
-        case 'i':
-          return `*${el.textContent}*`
-        case 'code':
-          const text = el.textContent || ''
-          if (el.parentElement?.tagName === 'PRE') {
-            return `\`\`\`${text}\`\`\`\n\n`
-          } else {
-            return `\`${text}\``
-          }
-        case 'pre':
-          const codeEl = el.querySelector('code')
-          if (codeEl) {
-            const lang = codeEl.className.match(/language-(\w+)/)?.[1] || ''
-            return `\`\`\`${lang}\n${codeEl.textContent || ''}\`\`\`\n\n`
-          }
-          return `\`\`\`\n${el.textContent || ''}\`\`\`\n\n`
-        case 'blockquote':
-          const quoteContent = Array.from(el.childNodes).map(processNode).join('').trim()
-          return quoteContent.split('\n').map(line => `> ${line}`).join('\n') + '\n\n'
-        case 'ul':
-          return Array.from(el.querySelectorAll(':scope > li')).map(li => {
-            return `- ${Array.from(li.childNodes).map(processNode).join('').trim()}`
-          }).join('\n') + '\n\n'
-        case 'ol':
-          return Array.from(el.querySelectorAll(':scope > li')).map((li, idx) => {
-            return `${idx + 1}. ${Array.from(li.childNodes).map(processNode).join('').trim()}`
-          }).join('\n') + '\n\n'
-        case 'li':
-          return Array.from(el.childNodes).map(processNode).join('').trim()
-        case 'a':
-          return `[${el.textContent}](${el.getAttribute('href') || ''})`
-        case 'p':
-          const pContent = Array.from(el.childNodes).map(processNode).join('').trim()
-          return pContent + '\n\n'
-        case 'hr':
-          return '---\n\n'
-        case 'br':
-          return '\n'
-        case 'table':
-          // 简单的表格转换
-          const rows = Array.from(el.querySelectorAll('tr'))
-          return rows.map(row => {
-            const cells = Array.from(row.querySelectorAll('td, th'))
-            return `| ${cells.map(c => c.textContent?.trim() || '').join(' | ')} |`
-          }).join('\n') + '\n\n'
-        default:
-          return Array.from(el.childNodes).map(processNode).join('')
-      }
-    }
-    return ''
-  }
-
-  Array.from(div.childNodes).forEach(node => {
-    markdown += processNode(node)
-  })
-
-  return markdown.trim()
-}
+import { htmlToMarkdown } from '../utils/htmlToMarkdown'
 
 export interface Tab {
   id: string
@@ -358,7 +265,7 @@ export function useTabs({ onTabChange }: UseTabsParams = {}) {
     }
 
     setTabs(newTabs)
-  }, [tabs, activeTabId, createNewTab, t.dialog.unsavedChanges, onTabChange])
+  }, [tabs, activeTabId, createNewTab, t.dialog.unsavedChanges, t.app.untitled, onTabChange])
 
   /**
    * 切换页签

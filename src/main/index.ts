@@ -127,7 +127,7 @@ ipcMain.handle('show-open-dialog', async () => {
   return result
 })
 
-ipcMain.handle('export-pdf', async (event) => {
+ipcMain.handle('export-pdf', async () => {
   if (!mainWindow) return { success: false, error: 'No window' }
 
   console.log('[PDF Export] Starting export process...')
@@ -158,6 +158,8 @@ ipcMain.handle('export-pdf', async (event) => {
         }
 
         const content = editor.innerHTML;
+        // 注意：此处样式与 src/styles/exportStyles.ts:generateBaseStyles 须保持同步
+        // 主进程无法直接导入渲染进程的 TS 模块，修改样式时请同步更新两处
         const styles = \`
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.8; color: #333; padding: 2rem; max-width: 210mm; margin: 0 auto; background: #ffffff; }
@@ -468,7 +470,10 @@ ${content}
       const tempDir = path.dirname(filePath)
       const tempHtmlPath = path.join(tempDir, 'temp_export.html')
       await fs.unlink(tempHtmlPath)
-    } catch {}
+    } catch (error) {
+      // 忽略清理错误
+      console.warn('Cleanup error:', error)
+    }
     return { success: false, error: (error as Error).message }
   }
 })

@@ -1,18 +1,17 @@
 import { useState, useEffect, useCallback, memo } from 'react'
+import type { Editor } from '@tiptap/core'
 import { useLanguage } from '../contexts/LanguageContext'
 import { MERMAID_TEMPLATES } from '../constants/mermaidTemplates'
 import type { MermaidDiagramType } from '../utils/mermaidRenderer'
 
 interface MenuBarProps {
-  editor: any
-  currentFile: string | null
-  isModified: boolean
+  editor: Editor | null
   onNewFile: () => void
   onOpenFile: () => void
   onSaveFile: () => void
   onExportPDF: () => void
   onExportHTML: () => void
-  onExportWord: () => (setShowSettings: (show: boolean) => void) => void
+  onExportWord: (setShowSettings: (show: boolean) => void) => void
   onOpenSettings: () => void
   onToggleSidebar: () => void
   onShowAbout: () => void
@@ -29,8 +28,6 @@ type MenuType = 'file' | 'edit' | 'paragraph' | 'diagram' | 'format' | 'view' | 
  */
 function MenuBar({
   editor,
-  currentFile,
-  isModified,
   onNewFile,
   onOpenFile,
   onSaveFile,
@@ -74,7 +71,7 @@ function MenuBar({
       <Divider />
       <MenuItem onClick={onExportPDF} label={t.menu.exportPDF} />
       <MenuItem onClick={onExportHTML} label={t.menu.exportHTML} />
-      <MenuItem onClick={() => onExportWord()(onOpenSettings)} label={t.menu.exportWord} />
+      <MenuItem onClick={() => onExportWord(onOpenSettings)} label={t.menu.exportWord} />
     </div>
   )
 

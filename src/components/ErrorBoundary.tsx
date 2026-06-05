@@ -1,4 +1,4 @@
-import { Component, ReactNode, memo } from 'react'
+import { Component, ReactNode } from 'react'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -14,7 +14,7 @@ interface ErrorBoundaryState {
  * 错误边界组件
  * 捕获子组件错误并显示友好提示
  */
-class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props)
     this.state = { hasError: false }
@@ -65,7 +65,3 @@ class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBoundaryStat
     return this.props.children
   }
 }
-
-const ErrorBoundary = memo(ErrorBoundaryClass) as typeof ErrorBoundaryClass
-
-export default ErrorBoundary

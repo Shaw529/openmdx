@@ -4,11 +4,11 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTheme } from '../contexts/ThemeContext'
 import { useLanguage } from '../contexts/LanguageContext'
 import type { MermaidBlockAttributes } from './MermaidBlock'
-import type { MermaidDiagramType, ExtendedMermaidTheme } from '../utils/mermaidRenderer'
-import { renderMermaid, MERMAID_THEMES } from '../utils/mermaidRenderer'
+import type { ExtendedMermaidTheme } from '../utils/mermaidRenderer'
+import { renderMermaid } from '../utils/mermaidRenderer'
 import { MermaidCodeEditor } from '../components/MermaidCodeEditor'
 import { MermaidThemeSelector } from '../components/MermaidThemeSelector'
-import { CUSTOM_MERMAID_THEMES, getThemeById, getLightThemes, getDarkThemes, getDefaultTheme } from '../constants/mermaidThemes'
+import { getThemeById } from '../constants/mermaidThemes'
 
 /**
  * MermaidBlockNodeView 组件
@@ -64,14 +64,14 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
       // 从节点更新到本地状态
       setSourceCode(currentSource)
     }
-  }, [node, getSourceCode])
+  }, [node, getSourceCode, sourceCode])
 
   // 同步主题属性到本地状态
   useEffect(() => {
     if (theme !== currentTheme) {
       setCurrentTheme(theme)
     }
-  }, [theme])
+  }, [theme, currentTheme])
 
   // 渲染图表
   const renderDiagram = useCallback(async (code: string) => {
@@ -120,7 +120,7 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
     if (viewMode !== 'source' && sourceCode.trim()) {
       renderDiagram(sourceCode)
     }
-  }, [attrs.theme, attrs.customThemeId]) // 监听主题属性变化
+  }, [attrs.theme, attrs.customThemeId, renderDiagram, sourceCode, viewMode])
 
   // 处理源码变更
   const handleSourceChange = useCallback((newCode: string) => {
@@ -183,11 +183,6 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
     updateAttributes({ viewMode: newMode })
   }, [updateAttributes, syncToNode])
 
-  // 切换图表类型
-  const handleDiagramTypeChange = useCallback((newType: MermaidDiagramType) => {
-    updateAttributes({ diagramType: newType })
-  }, [updateAttributes])
-
   // 切换主题
   const handleThemeChange = useCallback((newTheme: ExtendedMermaidTheme, customThemeId?: string) => {
     // 同时更新节点属性和本地状态
@@ -226,24 +221,6 @@ export const MermaidBlockNodeView: React.FC<NodeViewProps> = (props) => {
       setZoomLevel(100)
     }
   }, [isMaximized])
-
-  // 图表类型选项
-  const diagramTypeOptions: { value: MermaidDiagramType; label: string }[] = [
-    { value: 'flowchart', label: '流程图' },
-    { value: 'sequence', label: '时序图' },
-    { value: 'class', label: '类图' },
-    { value: 'state', label: '状态图' },
-    { value: 'gantt', label: '甘特图' },
-    { value: 'pie', label: '饼图' },
-    { value: 'mindmap', label: '思维导图' },
-    { value: 'er', label: 'ER图' },
-    { value: 'git', label: 'Git图' },
-    { value: 'timeline', label: '时间线' },
-    { value: 'journey', label: '用户旅程' },
-    { value: 'quadrant', label: '四象限图' },
-    { value: 'c4', label: 'C4架构图' },
-    { value: 'requirement', label: '需求图' },
-  ]
 
   return (
     <NodeViewWrapper

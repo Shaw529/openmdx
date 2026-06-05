@@ -1,26 +1,9 @@
 import mermaid from 'mermaid'
 import type { CustomMermaidTheme } from '../constants/mermaidThemes'
-import { CUSTOM_MERMAID_THEMES, getThemeById } from '../constants/mermaidThemes'
+import { detectDiagramType } from './mermaidParser'
 
-/**
- * Mermaid 图表类型
- * 支持 14 种 Mermaid 图表类型
- */
-export type MermaidDiagramType =
-  | 'flowchart'     // 流程图
-  | 'sequence'      // 时序图
-  | 'class'         // 类图
-  | 'state'         // 状态图
-  | 'gantt'         // 甘特图
-  | 'pie'           // 饼图
-  | 'mindmap'       // 思维导图
-  | 'er'            // ER图
-  | 'git'           // Git图
-  | 'timeline'      // 时间线
-  | 'journey'       // 用户旅程
-  | 'quadrant'      // 四象限图
-  | 'c4'            // C4架构图
-  | 'requirement'   // 需求图
+// MermaidDiagramType 定义在 mermaidParser.ts 中以避免循环依赖，此处重导出
+export type { MermaidDiagramType } from './mermaidParser'
 
 /**
  * Mermaid 渲染错误类
@@ -86,7 +69,7 @@ export function initMermaid(
   theme: ExtendedMermaidTheme = 'default',
   customTheme?: CustomMermaidTheme
 ): void {
-  const config: Record<string, any> = {
+  const config: Record<string, unknown> = {
     startOnLoad: false,
     theme: theme === 'custom' ? 'base' : theme,
     logLevel: 0, // 关闭 mermaid 的日志输出
@@ -122,11 +105,11 @@ export async function renderMermaid(
   id: string,
   theme: ExtendedMermaidTheme = 'default',
   customTheme?: CustomMermaidTheme
-): Promise<{ svg: string; bindFunctions?: Function }> {
+): Promise<{ svg: string; bindFunctions?: () => void }> {
   try {
     // Mermaid 11.x: 动态更改主题需要在每次渲染时重新初始化
     // 先重置 mermaid 实例
-    delete (mermaid as any).config
+    delete (mermaid as unknown as Record<string, unknown>).config
 
     // 重新初始化并设置主题
     initMermaid(theme, customTheme)
@@ -204,82 +187,8 @@ export async function validateMermaid(code: string): Promise<boolean> {
  * @param code - Mermaid 代码
  * @returns 图表类型，如果无法检测则返回 null
  */
-export function detectDiagramType(code: string): MermaidDiagramType | null {
-  const lines = code.trim().split('\n')
-  const firstLine = lines[0]?.trim().toLowerCase() || ''
-
-  // 流程图
-  if (firstLine.startsWith('flowchart') || firstLine.startsWith('graph')) {
-    return 'flowchart'
-  }
-
-  // 时序图
-  if (firstLine.startsWith('sequencediagram')) {
-    return 'sequence'
-  }
-
-  // 类图
-  if (firstLine.startsWith('classdiagram')) {
-    return 'class'
-  }
-
-  // 状态图
-  if (firstLine.startsWith('statediagram')) {
-    return 'state'
-  }
-
-  // 甘特图
-  if (firstLine.startsWith('gantt')) {
-    return 'gantt'
-  }
-
-  // 饼图
-  if (firstLine.startsWith('pie')) {
-    return 'pie'
-  }
-
-  // 思维导图
-  if (firstLine.startsWith('mindmap')) {
-    return 'mindmap'
-  }
-
-  // ER 图
-  if (firstLine.startsWith('erdiagram')) {
-    return 'er'
-  }
-
-  // Git 图
-  if (firstLine.startsWith('gitgraph')) {
-    return 'git'
-  }
-
-  // 时间线
-  if (firstLine.startsWith('timeline')) {
-    return 'timeline'
-  }
-
-  // 用户旅程
-  if (firstLine.startsWith('journey')) {
-    return 'journey'
-  }
-
-  // 四象限图
-  if (firstLine.startsWith('quadrantchart')) {
-    return 'quadrant'
-  }
-
-  // C4 架构图
-  if (firstLine.startsWith('c4context') || firstLine.startsWith('c4')) {
-    return 'c4'
-  }
-
-  // 需求图
-  if (firstLine.startsWith('requirementdiagram')) {
-    return 'requirement'
-  }
-
-  return null
-}
+// detectDiagramType 已移至 mermaidParser.ts，此处重导出以保持兼容
+export { detectDiagramType } from './mermaidParser'
 
 /**
  * 获取图表类型的默认模板

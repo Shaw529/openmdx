@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, memo, useCallback } from 'react'
+import type { Editor, Node as PMNode, Mark } from '@tiptap/core'
 import { useLanguage } from '../contexts/LanguageContext'
 
 interface FindBarProps {
-  editor: any
+  editor: Editor | null
   onClose: () => void
 }
 
@@ -28,20 +29,34 @@ function FindBar({ editor, onClose }: FindBarProps) {
     searchInputRef.current?.focus()
   }, [])
 
+  /**
+   * 核心问题分析：
+   * 1. 旧算法使用 docOffset 手动累加偏移，容易出错
+   * 2. 跨块匹配时位置计算不准确
+   * 3. 特殊节点（如代码块、表格）边界处理不当
+   * 
+   * 新算法：直接使用 ProseMirror 文档的绝对位置
+   * - 遍历所有文本节点，获取每个节点的绝对位置
+   * - 在每个文本块内进行正则匹配
+   * - 将局部坐标转换为文档绝对坐标
+   */
   const getMatchesInDocument = useCallback((): Match[] => {
     if (!editor || !searchTerm) return []
     
     const allMatches: Match[] = []
-    const textContent = editor.getText()
+    const { state } = editor
+    const { doc } = state
     
-    if (!textContent) return []
-
-    let flags = caseSensitive ? 'g' : 'gi'
+    // 1. 构造正则表达式
+    const flags = caseSensitive ? 'g' : 'gi'
     let pattern = searchTerm
+    
     if (!regex) {
+      // 转义正则特殊字符
       const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       pattern = escaped
     }
+    
     if (wholeWord) {
       pattern = '\\b' + pattern + '\\b'
     }
@@ -53,53 +68,51 @@ function FindBar({ editor, onClose }: FindBarProps) {
       return []
     }
 
-    let match
-    while ((match = searchRegex.exec(textContent)) !== null) {
-      const matchStart = match.index
-      const matchEnd = matchStart + match[0].length
-      
-      const from = textOffsetToDocPos(matchStart)
-      const to = textOffsetToDocPos(matchEnd)
-      
-      if (from !== null && to !== null) {
-        allMatches.push({
-          from,
-          to,
-          text: match[0]
+    // 2. 遍历文档中的所有文本节点，收集位置信息
+    // 直接使用节点的 pos 属性作为绝对位置，避免手动计算偏移
+    const textNodes: { text: string; from: number; to: number }[] = []
+    
+    doc.descendants((node: PMNode, pos: number) => {
+      if (node.isText && node.text) {
+        // 每个文本节点的 from 就是它在文档中的绝对位置
+        textNodes.push({
+          text: node.text,
+          from: pos,
+          to: pos + node.nodeSize
         })
       }
+      return true
+    })
+    
+    // 3. 在每个文本节点内进行正则匹配
+    for (const block of textNodes) {
+      let match
+      // 重置正则的 lastIndex，避免跨块搜索时状态污染
+      searchRegex.lastIndex = 0
       
-      if (match[0].length === 0) {
-        searchRegex.lastIndex++
+      while ((match = searchRegex.exec(block.text)) !== null) {
+        // 计算匹配项在文档中的绝对位置
+        const localFrom = match.index
+        const localTo = localFrom + match[0].length
+        
+        // 边界检查：确保位置在有效范围内
+        if (localFrom >= 0 && localTo <= block.text.length) {
+          allMatches.push({
+            from: block.from + localFrom,
+            to: block.from + localTo,
+            text: match[0]
+          })
+        }
+        
+        // 处理零长度匹配，避免无限循环
+        if (match[0].length === 0) {
+          searchRegex.lastIndex++
+        }
       }
     }
 
     return allMatches
   }, [editor, searchTerm, caseSensitive, wholeWord, regex])
-
-  const textOffsetToDocPos = (textOffset: number): number | null => {
-    if (!editor) return null
-    const { doc } = editor.state
-    let currentOffset = 0
-    let result: number | null = null
-    
-    doc.descendants((node: any, pos: number) => {
-      if (result !== null) return false
-      
-      if (node.isText) {
-        const nodeStart = currentOffset
-        const nodeEnd = currentOffset + node.text.length
-        
-        if (textOffset >= nodeStart && textOffset <= nodeEnd) {
-          result = pos + (textOffset - nodeStart)
-        }
-        
-        currentOffset = nodeEnd
-      }
-    })
-    
-    return result
-  }
 
   const clearHighlights = useCallback(() => {
     if (!editor) return
@@ -110,9 +123,9 @@ function FindBar({ editor, onClose }: FindBarProps) {
     if (!markType) return
     
     const tr = state.tr
-    state.doc.descendants((node: any, pos: number) => {
+    state.doc.descendants((node: PMNode, pos: number) => {
       if (node.isText && node.marks) {
-        node.marks.forEach((mark: any) => {
+        node.marks.forEach((mark: Mark) => {
           if (mark.type.name === 'searchHighlight') {
             tr.removeMark(pos, pos + node.nodeSize, markType)
           }
@@ -129,30 +142,31 @@ function FindBar({ editor, onClose }: FindBarProps) {
     if (!editor) return
     const { state, view } = editor
     if (!state || !view) return
-    
+
     const markType = state.schema.marks['searchHighlight']
     if (!markType) return
 
     const tr = state.tr
 
-    state.doc.descendants((node: any, pos: number) => {
+    // 先清除旧高亮
+    state.doc.descendants((node: PMNode, pos: number) => {
       if (node.isText && node.marks) {
-        node.marks.forEach((mark: any) => {
+        node.marks.forEach((mark: Mark) => {
           if (mark.type.name === 'searchHighlight') {
             tr.removeMark(pos, pos + node.nodeSize, markType)
           }
         })
       }
     })
-    view.dispatch(tr)
 
-    if (allMatches.length === 0) return
-
-    const tr2 = view.state.tr
+    // 再添加新高亮（合并到同一事务，避免两个 undo 步骤）
     allMatches.forEach(match => {
-      tr2.addMark(match.from, match.to, markType.create({ class: 'search-highlight' }))
+      tr.addMark(match.from, match.to, markType.create({ class: 'search-highlight' }))
     })
-    view.dispatch(tr2)
+
+    if (tr.steps.size > 0) {
+      view.dispatch(tr)
+    }
   }, [editor])
 
   const scrollToPosition = useCallback((pos: number) => {
@@ -207,7 +221,7 @@ function FindBar({ editor, onClose }: FindBarProps) {
     } else {
       clearHighlights()
     }
-  }, [searchTerm, caseSensitive, wholeWord, regex, editor])
+  }, [searchTerm, caseSensitive, wholeWord, regex, editor, getMatchesInDocument, highlightAllMatches, scrollToPosition, clearHighlights])
 
   const handleFindNext = useCallback(() => {
     if (matches.length === 0) return
@@ -248,14 +262,20 @@ function FindBar({ editor, onClose }: FindBarProps) {
     if (!editor || matches.length === 0) return
     
     const { state, view } = editor
-    const sortedMatches = [...matches].sort((a, b) => b.from - a.from)
 
-    sortedMatches.forEach(match => {
-      const tr = state.tr.deleteRange(match.from, match.to)
-      const newText = state.schema.text(replaceTerm)
-      tr.insert(match.from, newText)
-      view.dispatch(tr)
+    // 问题分析：
+    // 1. 每次 dispatch 后文档状态会变化，之前的 transaction 变得无效 → 需要合并到一个 transaction
+    // 2. 替换后文本长度变化会导致位置偏移 → 从前往后替换，前面的删除不影响后面的位置
+    
+    // 从前往后替换（不需要排序），删除前面的不会影响后面的位置
+    let tr = state.tr
+    
+    matches.forEach(match => {
+      tr = tr.deleteRange(match.from, match.to)
+      tr = tr.insert(match.from, state.schema.text(replaceTerm))
     })
+    
+    view.dispatch(tr)
 
     clearHighlights()
     setMatches([])
@@ -289,10 +309,10 @@ function FindBar({ editor, onClose }: FindBarProps) {
           onKeyDown={e => {
             if (e.key === 'Enter') {
               e.preventDefault()
+              e.stopPropagation()
               if (e.shiftKey) handleFindPrevious()
               else handleFindNext()
             }
-            e.stopPropagation()
           }}
         />
         <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[40px] text-center">{matchCountText}</span>
@@ -318,10 +338,10 @@ function FindBar({ editor, onClose }: FindBarProps) {
             onKeyDown={e => {
               if (e.key === 'Enter') {
                 e.preventDefault()
+                e.stopPropagation()
                 if (e.shiftKey) handleReplaceAll()
                 else handleReplace()
               }
-              e.stopPropagation()
             }}
           />
           <button onClick={handleReplace} disabled={matches.length === 0}

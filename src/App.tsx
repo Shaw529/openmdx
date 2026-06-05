@@ -5,12 +5,7 @@ import TabBar from './components/TabBar'
 import FindBar from './components/FindBar'
 import GoToLineModal from './components/GoToLineModal'
 
-// Editor引用类型（与Editor.tsx中的EditorRef保持一致）
-interface EditorRef {
-  getCharCount: () => number
-  getLineCount: () => number
-  getEditor: () => unknown
-}
+import type { EditorRef } from './components/Editor'
 import SettingsModal from './components/SettingsModal'
 import AboutModal from './components/AboutModal'
 import MenuBar from './components/MenuBar'
@@ -87,7 +82,6 @@ function App() {
   const { handleExportPDF, handleExportHTML, handleExportWord } = useExport({
     content: activeTab?.content || '',
     currentFile: activeTab?.path || null,
-    language,
     resolvedTheme,
     settings
   })
@@ -180,8 +174,6 @@ function App() {
         {/* 1. 经典菜单栏 - 32px高 */}
         <MenuBar
           editor={editorRef.current?.getEditor()}
-          currentFile={activeTab?.path || null}
-          isModified={activeTab?.isModified || false}
           onNewFile={handleNewFile}
           onOpenFile={handleOpenFile}
           onSaveFile={handleSaveFile}

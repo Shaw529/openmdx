@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import type { CustomMermaidTheme } from '../constants/mermaidThemes'
 import { CUSTOM_MERMAID_THEMES, getLightThemes, getDarkThemes } from '../constants/mermaidThemes'
 
 interface MermaidThemeSelectorProps {

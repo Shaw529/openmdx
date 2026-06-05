@@ -1,4 +1,4 @@
-import { Node, mergeAttributes } from '@tiptap/core'
+import { Node, mergeAttributes, InputRule } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 import { MermaidBlockNodeView } from './MermaidBlockNodeView'
 import type { MermaidDiagramType, ExtendedMermaidTheme } from '../utils/mermaidRenderer'
@@ -182,6 +182,36 @@ export const MermaidBlock = Node.create<MermaidBlockAttributes>({
         })
       },
     }
+  },
+
+  // 添加输入规则：拦截 ```mermaid 并创建 MermaidBlock 节点
+  addInputRules() {
+    return [
+      new InputRule({
+        find: /```mermaid\s*\n/,
+        handler: ({ state, range, commands }) => {
+          const { from, to } = range
+
+          // 删除已匹配的 ```mermaid\n 部分
+          commands.deleteRange({ from, to })
+
+          // 插入 MermaidBlock 节点（空内容，等待用户输入）
+          commands.insertContentAt(from, {
+            type: 'mermaidBlock',
+            attrs: {
+              diagramType: 'flowchart',
+              viewMode: 'source',
+              theme: 'custom',
+              customThemeId: 'modern-light',
+            },
+          })
+
+          // 将光标移到 MermaidBlock 内部
+          const pos = from + 1
+          commands.setTextSelection(pos)
+        },
+      }),
+    ]
   },
 
   // 使用 React Node View 渲染

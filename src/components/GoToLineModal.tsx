@@ -1,8 +1,9 @@
 import { useState, useCallback, memo } from 'react'
+import type { Editor } from '@tiptap/core'
 import { useLanguage } from '../contexts/LanguageContext'
 
 interface GoToLineModalProps {
-  editor: any
+  editor: Editor | null
   onClose: () => void
 }
 
