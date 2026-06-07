@@ -89,7 +89,7 @@
 
 ### 下载应用
 
-**[📥 下载最新版本 v1.4.0](https://github.com/Xiaoqiang-Zhao/Mdtx/releases/latest)**
+**[📥 下载最新版本 v1.4.0](https://github.com/Shaw529/Mdtx/releases/latest)**
 
 #### 方式一：安装程序（推荐）
 
