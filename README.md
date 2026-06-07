@@ -299,7 +299,7 @@ openmdtx/
 
 ```bash
 # 克隆仓库
-git clone https://github.com/Xiaoqiang-Zhao/Mdtx.git
+git clone https://github.com/Shaw529/Mdtx.git
 cd Mdtx
 
 # 安装依赖
